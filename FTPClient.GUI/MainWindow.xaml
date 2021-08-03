@@ -110,7 +110,10 @@
                     <DataGridTemplateColumn Header="进度" Width="200">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <ProgressBar Minimum="0" Maximum="100" Value="{Binding Progress}"></ProgressBar>
+                                <ProgressBar Height="15"
+                                    Minimum="0" Maximum="100"
+                                    Value="{Binding Progress}"
+                                    ToolTip="{Binding Progress}"></ProgressBar>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

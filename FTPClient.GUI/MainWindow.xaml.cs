@@ -12,17 +12,28 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using ReactiveUI;
 
 namespace FTPClient.GUI
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, IViewFor<MainViewModel>
     {
+
+        object? IViewFor.ViewModel
+        {
+            get => ViewModel;
+            set => ViewModel = (MainViewModel)value;
+        }
+
+        public MainViewModel? ViewModel { get; set; }
+
         public MainWindow()
         {
             InitializeComponent();
+            ViewModel = new MainViewModel();
         }
     }
 }

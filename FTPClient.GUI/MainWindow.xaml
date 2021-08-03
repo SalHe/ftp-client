@@ -7,6 +7,11 @@
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         Title="FTP Client" Height="700" Width="800">
+
+    <Window.DataContext>
+        <local:MainViewModel/>
+    </Window.DataContext>
+
     <Grid Margin="8">
 
         <Grid.RowDefinitions>
@@ -29,21 +34,23 @@
                 <ColumnDefinition Width="60"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
             <TextBlock Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">主机地址：</TextBlock>
-            <TextBox Grid.Column="1" VerticalAlignment="Center"  Text="127.0.0.1"/>
+            <TextBox Grid.Column="1" VerticalAlignment="Center"  Text="{Binding Host}" IsEnabled="{Binding NotConnected}"/>
 
             <TextBlock Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">端口：</TextBlock>
-            <TextBox Grid.Column="3" VerticalAlignment="Center"  Text="21"/>
+            <TextBox Grid.Column="3" VerticalAlignment="Center" Text="{Binding Port}" IsEnabled="{Binding NotConnected}"/>
 
             <TextBlock Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Right">用户名：</TextBlock>
-            <TextBox Grid.Column="5" VerticalAlignment="Center"  Text="admin"/>
+            <TextBox Grid.Column="5" VerticalAlignment="Center" Text="{Binding Username}" IsEnabled="{Binding NotConnected}"/>
 
             <TextBlock Grid.Column="6" VerticalAlignment="Center" HorizontalAlignment="Right">密码：</TextBlock>
-            <TextBox Grid.Column="7" VerticalAlignment="Center"  Text="shabi"/>
+            <TextBox Grid.Column="7" VerticalAlignment="Center"  Text="{Binding Password}" IsEnabled="{Binding NotConnected}"/>
 
-            <Button Grid.Column="8" Width="80" Content="连接" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            <Button Grid.Column="8" Width="80" Content="连接" VerticalAlignment="Center" HorizontalAlignment="Center" IsEnabled="{Binding NotConnected}"/>
+            <Button Grid.Column="9" Width="80" Content="断开" VerticalAlignment="Center" HorizontalAlignment="Center" IsEnabled="{Binding Connected}"/>
         </Grid>
 
         <!-- 文件列表 -->

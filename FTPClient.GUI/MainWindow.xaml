@@ -49,8 +49,14 @@
             <TextBlock Grid.Column="6" VerticalAlignment="Center" HorizontalAlignment="Right">密码：</TextBlock>
             <TextBox Grid.Column="7" VerticalAlignment="Center"  Text="{Binding Password}" IsEnabled="{Binding NotConnected}"/>
 
-            <Button Grid.Column="8" Width="80" Content="连接" VerticalAlignment="Center" HorizontalAlignment="Center" IsEnabled="{Binding NotConnected}"/>
-            <Button Grid.Column="9" Width="80" Content="断开" VerticalAlignment="Center" HorizontalAlignment="Center" IsEnabled="{Binding Connected}"/>
+            <Button Grid.Column="8" Width="80" Content="连接" 
+                    VerticalAlignment="Center" HorizontalAlignment="Center"
+                    IsEnabled="{Binding NotConnected}"
+                    Command="{Binding ConnectFtpServerCommand}"/>
+            <Button Grid.Column="9" Width="80" Content="断开"
+                    VerticalAlignment="Center" HorizontalAlignment="Center"
+                    IsEnabled="{Binding Connected}"
+                    Command="{Binding DisconnectFromFtpServeCommand}"/>
         </Grid>
 
         <!-- 文件列表 -->

@@ -44,7 +44,7 @@ namespace FTPClient.GUI
         {
             Task.Run(async () =>
             {
-                await ViewModel.ChangeLocalDirectory("");
+                await ViewModel.ChangeLocalDirectory(@"E:\");
                 await ViewModel.ChangeRemoteDirectory("/");
             }).Wait();
             

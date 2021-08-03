@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ReactiveUI;
 
@@ -9,7 +11,7 @@ namespace FTPClient.GUI.ViewModels
 {
     public class FileModel : ReactiveObject
     {
-        private int _size;
+        private long _size;
         private DateTime _time;
         private string _filePath;
 
@@ -22,10 +24,17 @@ namespace FTPClient.GUI.ViewModels
                 this.RaisePropertyChanged(nameof(FileName));
             }
         }
-        // TODO 获取文件名
-        public string FileName => FilePath;
+        public string FileName
+        {
+            get
+            {
+                if (Regex.IsMatch(FilePath, @"^\w:\\$"))
+                    return FilePath;
+                return Path.GetFileName(FilePath);
+            }
+        }
 
-        public int Size
+        public long Size
         {
             get => _size;
             set => this.RaiseAndSetIfChanged(ref _size, value);

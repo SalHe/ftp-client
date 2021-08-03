@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Reactive;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
+using DynamicData;
 using ReactiveUI;
 
 namespace FTPClient.GUI.ViewModels
@@ -100,25 +104,57 @@ namespace FTPClient.GUI.ViewModels
 
         public async Task<Unit> ChangeLocalDirectory(string dir)
         {
-            // TODO 判断是否为目录/目录是否存在
-            // TODO Windows驱动器列表展示
-            // TODO 获取本地的文件列表
+            var files = new List<FileModel>();
+            if (string.IsNullOrEmpty(dir) || Regex.IsMatch(dir, @"^\w:\\+\.\.$"))
+            {
+                // 当路径为空时或者从驱动器根目录回退时展示驱动器
+                foreach (string drive in Directory.GetLogicalDrives())
+                {
+                    files.Add(new FileModel()
+                    {
+                        FilePath = drive,
+                        Size = -1,
+                        Time = Directory.GetLastWriteTime(drive)
+                    });
+                }
+            }
+            else
+            {
+                dir = Path.GetFullPath(dir);    // 转为绝对路径
+                if (!Directory.Exists(dir))
+                    return Unit.Default;
+                files.Add(new FileModel()
+                {
+                    FilePath = Path.Join(dir, ".."),
+                    Size = -1,
+                    Time = DateTime.MaxValue
+                });
+                foreach (string fullPath in Directory.EnumerateDirectories(dir))
+                {
+                    files.Add(new FileModel()
+                    {
+                        FilePath = fullPath,
+                        Size = -1,
+                        Time = Directory.GetLastWriteTime(fullPath)
+                    });
+                }
+
+                foreach (string fullPath in Directory.EnumerateFiles(dir))
+                {
+                    files.Add(new FileModel()
+                    {
+                        FilePath = fullPath,
+                        Size = new FileInfo(fullPath).Length,
+                        Time = File.GetLastWriteTime(fullPath)
+                    });
+                }
+            }
+
             LocalDirectory = dir;
             RunOnUIThread(() =>
             {
                 LocalFiles.Clear();
-                LocalFiles.Add(new FileModel()
-                {
-                    FilePath = @"C:\1.txt",
-                    Size = 5,
-                    Time = DateTime.Now
-                });
-                LocalFiles.Add(new FileModel()
-                {
-                    FilePath = @"C:\2.txt",
-                    Size = 5,
-                    Time = DateTime.Now
-                });
+                LocalFiles.AddRange(files);
             });
             return Unit.Default;
         }

@@ -86,6 +86,11 @@
                 <DataGrid Grid.Row="1" Margin="0 0 5 5"
                           ItemsSource="{Binding LocalFiles}" AutoGenerateColumns="False"
                           IsReadOnly="True" SelectionUnit="FullRow">
+                    <DataGrid.InputBindings>
+                        <MouseBinding Gesture="LeftDoubleClick" 
+                                                              Command="{Binding ChangeLocalDirectoryCommand}" 
+                                                              CommandParameter="{Binding Path=SelectedItem.FilePath, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                    </DataGrid.InputBindings>
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="文件名" Width="*" Binding="{Binding FileName}"/>
                         <DataGridTextColumn Header="大小" Width="120" Binding="{Binding Size}"/>
@@ -112,6 +117,11 @@
                 <DataGrid Grid.Row="1" Margin="5 0 0 5"
                                                 ItemsSource="{Binding RemoteFiles}" AutoGenerateColumns="False"
                                                 IsReadOnly="True" SelectionUnit="FullRow">
+                    <DataGrid.InputBindings>
+                        <MouseBinding Gesture="LeftDoubleClick" 
+                                      Command="{Binding ChangeRemoteDirectoryCommand}" 
+                                      CommandParameter="{Binding Path=SelectedItem.FilePath, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                    </DataGrid.InputBindings>
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="文件名" Width="*" Binding="{Binding FileName}"/>
                         <DataGridTextColumn Header="大小" Width="120" Binding="{Binding Size}"/>

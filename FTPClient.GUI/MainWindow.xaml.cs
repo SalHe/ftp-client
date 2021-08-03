@@ -42,40 +42,12 @@ namespace FTPClient.GUI
 
         private void AddTestFiles()
         {
-            ViewModel.LocalDirectory = "C:/";
-            ViewModel.RemoteDirectory = "/home";
-
-            ViewModel.LocalFiles.Add(new FileModel()
+            Task.Run(async () =>
             {
-                FilePath = @"C:\1.txt",
-                Size = 5,
-                Time = DateTime.Now
-            });
-            ViewModel.LocalFiles.Add(new FileModel()
-            {
-                FilePath = @"C:\2.txt",
-                Size = 5,
-                Time = DateTime.Now
-            });
-
-
-            ViewModel.RemoteFiles.Add(new RemoteFileModel()
-            {
-                FilePath = @"/home/1.txt",
-                Size = 5,
-                Time = DateTime.Now,
-                Grants = "-rw-------",
-                Owner = "ftp/ftp"
-            });
-            ViewModel.RemoteFiles.Add(new RemoteFileModel()
-            {
-                FilePath = @"/home/2.txt",
-                Size = 5,
-                Time = DateTime.Now,
-                Grants = "-rw-------",
-                Owner = "ftp/ftp"
-            });
-
+                await ViewModel.ChangeLocalDirectory("");
+                await ViewModel.ChangeRemoteDirectory("/");
+            }).Wait();
+            
             ViewModel.TransferTasks.Add(new TransferFileModel()
             {
                 FilePath = @"C:\1.txt",

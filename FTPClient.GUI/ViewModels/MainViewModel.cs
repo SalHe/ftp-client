@@ -1,5 +1,10 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Reactive;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Threading;
 using ReactiveUI;
 
 namespace FTPClient.GUI.ViewModels
@@ -66,6 +71,8 @@ namespace FTPClient.GUI.ViewModels
 
         public ReactiveCommand<Unit, Unit> ConnectFtpServerCommand { get; }
         public ReactiveCommand<Unit, Unit> DisconnectFromFtpServeCommand { get; }
+        public ReactiveCommand<string, Unit> ChangeLocalDirectoryCommand { get; }
+        public ReactiveCommand<string, Unit> ChangeRemoteDirectoryCommand { get; }
 
         #endregion
 
@@ -85,6 +92,74 @@ namespace FTPClient.GUI.ViewModels
             {
                 // TODO 实现断开连接
                 Connected = false;
+            });
+
+            ChangeLocalDirectoryCommand = ReactiveCommand.CreateFromTask(new Func<string, Task<Unit>>(ChangeLocalDirectory));
+            ChangeRemoteDirectoryCommand = ReactiveCommand.CreateFromTask(new Func<string, Task<Unit>>(ChangeRemoteDirectory));
+        }
+
+        public async Task<Unit> ChangeLocalDirectory(string dir)
+        {
+            // TODO 判断是否为目录/目录是否存在
+            // TODO Windows驱动器列表展示
+            // TODO 获取本地的文件列表
+            LocalDirectory = dir;
+            RunOnUIThread(() =>
+            {
+                LocalFiles.Clear();
+                LocalFiles.Add(new FileModel()
+                {
+                    FilePath = @"C:\1.txt",
+                    Size = 5,
+                    Time = DateTime.Now
+                });
+                LocalFiles.Add(new FileModel()
+                {
+                    FilePath = @"C:\2.txt",
+                    Size = 5,
+                    Time = DateTime.Now
+                });
+            });
+            return Unit.Default;
+        }
+
+        public async Task<Unit> ChangeRemoteDirectory(string dir)
+        {
+            // TODO 获取远程的文件列表
+            RemoteDirectory = dir;
+            RunOnUIThread(() =>
+            {
+                RemoteFiles.Clear();
+                RemoteFiles.Add(new RemoteFileModel()
+                {
+                    FilePath = @"/home/1.txt",
+                    Size = 5,
+                    Time = DateTime.Now,
+                    Grants = "-rw-------",
+                    Owner = "ftp/ftp"
+                });
+                RemoteFiles.Add(new RemoteFileModel()
+                {
+                    FilePath = @"/home/2.txt",
+                    Size = 5,
+                    Time = DateTime.Now,
+                    Grants = "-rw-------",
+                    Owner = "ftp/ftp"
+                });
+            });
+            return Unit.Default;
+        }
+
+        private void RunOnUIThread(Action action)
+        {
+            ThreadPool.QueueUserWorkItem(delegate
+            {
+                SynchronizationContext.SetSynchronizationContext(new
+                    DispatcherSynchronizationContext(System.Windows.Application.Current.Dispatcher));
+                SynchronizationContext.Current.Post(pl =>
+                {
+                    action();
+                }, null);
             });
         }
     }

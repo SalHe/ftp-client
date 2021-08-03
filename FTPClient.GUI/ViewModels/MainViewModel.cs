@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.ObjectModel;
 using System.Reactive;
-using System.Text;
-using System.Threading.Tasks;
 using ReactiveUI;
 
-namespace FTPClient.GUI
+namespace FTPClient.GUI.ViewModels
 {
     public class MainViewModel : ReactiveObject
     {
@@ -47,8 +43,10 @@ namespace FTPClient.GUI
                 this.RaisePropertyChanged(nameof(NotConnected));
             }
         }
-
         public bool NotConnected => !Connected;
+        public ObservableCollection<FileModel> LocalFiles { get; }
+        public ObservableCollection<RemoteFileModel> RemoteFiles { get; }
+        public ObservableCollection<TransferFileModel> TransferTasks { get; }
 
         #endregion
 
@@ -61,6 +59,10 @@ namespace FTPClient.GUI
 
         public MainViewModel()
         {
+            LocalFiles = new();
+            RemoteFiles = new();
+            TransferTasks = new();
+
             ConnectFtpServerCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 // TODO 实现连接到服务器

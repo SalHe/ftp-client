@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using FTPClient.GUI.ViewModels;
 using ReactiveUI;
 
 namespace FTPClient.GUI
@@ -28,12 +29,70 @@ namespace FTPClient.GUI
             set => ViewModel = (MainViewModel)value;
         }
 
-        public MainViewModel? ViewModel { get; set; }
+        public MainViewModel ViewModel { get; set; }
 
         public MainWindow()
         {
             InitializeComponent();
             ViewModel = new MainViewModel();
+            DataContext = ViewModel;
+
+            AddTestFiles();
+        }
+
+        private void AddTestFiles()
+        {
+            ViewModel.LocalFiles.Add(new FileModel()
+            {
+                FilePath = @"C:\1.txt",
+                Size = 5,
+                Time = DateTime.Now
+            });
+            ViewModel.LocalFiles.Add(new FileModel()
+            {
+                FilePath = @"C:\2.txt",
+                Size = 5,
+                Time = DateTime.Now
+            });
+
+
+            ViewModel.RemoteFiles.Add(new RemoteFileModel()
+            {
+                FilePath = @"/home/1.txt",
+                Size = 5,
+                Time = DateTime.Now,
+                Grants = "-rw-------",
+                Owner = "ftp/ftp"
+            });
+            ViewModel.RemoteFiles.Add(new RemoteFileModel()
+            {
+                FilePath = @"/home/2.txt",
+                Size = 5,
+                Time = DateTime.Now,
+                Grants = "-rw-------",
+                Owner = "ftp/ftp"
+            });
+
+            ViewModel.TransferTasks.Add(new TransferFileModel()
+            {
+                FilePath = @"C:\1.txt",
+                RemoteFilePath = @"/home/1.txt",
+                Size = 5,
+                Time = DateTime.Now,
+                TransferDirection = TransferDirection.Upload,
+                TransferStatus = TransferStatus.Transferring,
+                Progress = 50
+            });
+            ViewModel.TransferTasks.Add(new TransferFileModel()
+            {
+                FilePath = @"C:\2.txt",
+                RemoteFilePath = @"/home/2.txt",
+                Size = 5,
+                Time = DateTime.Now,
+                TransferDirection = TransferDirection.Download,
+                TransferStatus = TransferStatus.Done,
+                Progress = 100
+            });
         }
     }
 }

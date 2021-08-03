@@ -1,0 +1,97 @@
+﻿<Window x:Class="FTPClient.GUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FTPClient.GUI"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        Title="FTP Client" Height="700" Width="800">
+    <Grid Margin="8">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32"/>
+            <RowDefinition Height="2*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="120"/>
+            <RowDefinition Height="24"/>
+        </Grid.RowDefinitions>
+
+        <!-- FTP服务器参数区域 -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">主机地址：</TextBlock>
+            <TextBox Grid.Column="1" VerticalAlignment="Center"  Text="127.0.0.1"/>
+
+            <TextBlock Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">端口：</TextBlock>
+            <TextBox Grid.Column="3" VerticalAlignment="Center"  Text="21"/>
+
+            <TextBlock Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Right">用户名：</TextBlock>
+            <TextBox Grid.Column="5" VerticalAlignment="Center"  Text="admin"/>
+
+            <TextBlock Grid.Column="6" VerticalAlignment="Center" HorizontalAlignment="Right">密码：</TextBlock>
+            <TextBox Grid.Column="7" VerticalAlignment="Center"  Text="shabi"/>
+
+            <Button Grid.Column="8" Width="80" Content="连接" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+        </Grid>
+
+        <!-- 文件列表 -->
+        <Grid Grid.Row="1" Margin="0 10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <DataGrid Grid.Column="0" Margin="5 0"></DataGrid>
+            <DataGrid Grid.Column="1" Margin="5 0"></DataGrid>
+        </Grid>
+
+        <!-- 传输队列 -->
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="24"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" VerticalAlignment="Center">传输队列：</TextBlock>
+            <DataGrid Grid.Row="1">
+
+            </DataGrid>
+        </Grid>
+
+        <!-- 日志 -->
+        <Grid Grid.Row="3">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="24"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" VerticalAlignment="Center">日志：</TextBlock>
+            <TextBox Grid.Row="1" AcceptsReturn="True" IsReadOnly="True"/>
+        </Grid>
+
+        <!-- 命令 -->
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="32"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Row="0" VerticalAlignment="Center">命令：</TextBlock>
+            <TextBox Grid.Column="1"/>
+        </Grid>
+
+
+    </Grid>
+</Window>

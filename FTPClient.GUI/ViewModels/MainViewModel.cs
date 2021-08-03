@@ -13,6 +13,8 @@ namespace FTPClient.GUI.ViewModels
         private string _username = "admin";
         private string _password = string.Empty;
         private bool _connected;
+        private string _localDirectory;
+        private string _remoteDirectory;
 
         public string Host
         {
@@ -44,6 +46,16 @@ namespace FTPClient.GUI.ViewModels
             }
         }
         public bool NotConnected => !Connected;
+        public string LocalDirectory
+        {
+            get => _localDirectory;
+            set => this.RaiseAndSetIfChanged(ref _localDirectory, value);
+        }
+        public string RemoteDirectory
+        {
+            get => _remoteDirectory;
+            set => this.RaiseAndSetIfChanged(ref _remoteDirectory, value);
+        }
         public ObservableCollection<FileModel> LocalFiles { get; }
         public ObservableCollection<RemoteFileModel> RemoteFiles { get; }
         public ObservableCollection<TransferFileModel> TransferTasks { get; }

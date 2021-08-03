@@ -42,6 +42,9 @@ namespace FTPClient.GUI
 
         private void AddTestFiles()
         {
+            ViewModel.LocalDirectory = "C:/";
+            ViewModel.RemoteDirectory = "/home";
+
             ViewModel.LocalFiles.Add(new FileModel()
             {
                 FilePath = @"C:\1.txt",

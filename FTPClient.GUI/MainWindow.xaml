@@ -68,27 +68,61 @@
             </Grid.ColumnDefinitions>
 
             <!-- 本地文件 -->
-            <DataGrid Grid.Column="0" Margin="5 0"
-                      ItemsSource="{Binding LocalFiles}" AutoGenerateColumns="False"
-                      IsReadOnly="True" SelectionUnit="FullRow">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="文件名" Width="*" Binding="{Binding FileName}"/>
-                    <DataGridTextColumn Header="大小" Width="120" Binding="{Binding Size}"/>
-                    <DataGridTextColumn Header="修改时间" Binding="{Binding Time}"/>
-                </DataGrid.Columns>
-            </DataGrid>
+
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="32"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="0 0 5 5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" VerticalAlignment="Center">本地路径：</TextBlock>
+                    <TextBox Grid.Column="1" Text="{Binding LocalDirectory}"/>
+                </Grid>
+                <DataGrid Grid.Row="1" Margin="0 0 5 5"
+                          ItemsSource="{Binding LocalFiles}" AutoGenerateColumns="False"
+                          IsReadOnly="True" SelectionUnit="FullRow">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="文件名" Width="*" Binding="{Binding FileName}"/>
+                        <DataGridTextColumn Header="大小" Width="120" Binding="{Binding Size}"/>
+                        <DataGridTextColumn Header="修改时间" Binding="{Binding Time}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+
             <!-- 远程文件 -->
-            <DataGrid Grid.Column="1" Margin="5 0"
-                      ItemsSource="{Binding RemoteFiles}" AutoGenerateColumns="False"
-                      IsReadOnly="True" SelectionUnit="FullRow">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="文件名" Width="*" Binding="{Binding FileName}"/>
-                    <DataGridTextColumn Header="大小" Width="120" Binding="{Binding Size}"/>
-                    <DataGridTextColumn Header="修改时间" Binding="{Binding Time}"/>
-                    <DataGridTextColumn Header="权限" Binding="{Binding Grants}"/>
-                    <DataGridTextColumn Header="用户组" Binding="{Binding Owner}"/>
-                </DataGrid.Columns>
-            </DataGrid>
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="32"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="5 0 0 5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" VerticalAlignment="Center">远程路径：</TextBlock>
+                    <TextBox Grid.Column="1" Text="{Binding RemoteDirectory}"/>
+                </Grid>
+                <DataGrid Grid.Row="1" Margin="5 0 0 5"
+                                                ItemsSource="{Binding RemoteFiles}" AutoGenerateColumns="False"
+                                                IsReadOnly="True" SelectionUnit="FullRow">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="文件名" Width="*" Binding="{Binding FileName}"/>
+                        <DataGridTextColumn Header="大小" Width="120" Binding="{Binding Size}"/>
+                        <DataGridTextColumn Header="修改时间" Binding="{Binding Time}"/>
+                        <DataGridTextColumn Header="权限" Binding="{Binding Grants}"/>
+                        <DataGridTextColumn Header="用户组" Binding="{Binding Owner}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+            </Grid>
+
         </Grid>
 
         <!-- 传输队列 -->

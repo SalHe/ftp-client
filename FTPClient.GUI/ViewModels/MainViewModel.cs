@@ -322,8 +322,8 @@ namespace FTPClient.GUI.ViewModels
                 return;
             }
             _ftpClient.ChangeDirectory(path);
-            ListFiles();
             RemoteDirectory = _ftpClient.GetCurrentDirectory();
+            ListFiles();
         }
 
         private void ListFiles()

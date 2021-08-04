@@ -175,6 +175,7 @@
                     </DataGrid.Columns>
                     <DataGrid.ContextMenu>
                         <ContextMenu>
+                            <MenuItem Header="新建文件夹" Command="{Binding CreateRemoteDirectoryCommand}" IsEnabled="{Binding Connected}"/>
                             <MenuItem Height="100" Command="{Binding DownloadSelectedFileCommand}">
                                 <MenuItem.Header>
                                     <StackPanel Orientation="Vertical">

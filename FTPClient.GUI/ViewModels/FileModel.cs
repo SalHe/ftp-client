@@ -47,7 +47,7 @@ namespace FTPClient.GUI.ViewModels
                 int p = FilePath.LastIndexOf("/");
                 if (p >= 0)
                 {
-                    return FilePath.Substring(p+1);
+                    return FilePath.Substring(p + 1);
                 }
                 return Path.GetFileName(FilePath);
             }
@@ -67,6 +67,20 @@ namespace FTPClient.GUI.ViewModels
         {
             get => _fileIcon;
             set => this.RaiseAndSetIfChanged(ref _fileIcon, value);
+        }
+
+        public string FileDirectory
+        {
+            get
+            {
+                int p = FilePath.LastIndexOf("/");
+                if (p >= 0)
+                {
+                    return FilePath.Substring(0, p);
+                }
+
+                return Path.GetDirectoryName(FilePath);
+            }
         }
     }
 }

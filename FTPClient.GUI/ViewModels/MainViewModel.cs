@@ -9,9 +9,11 @@ using System.Reactive.Subjects;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Threading;
 using DynamicData;
 using FTPClient.Core;
+using Microsoft.VisualBasic;
 using ReactiveUI;
 
 namespace FTPClient.GUI.ViewModels
@@ -102,6 +104,12 @@ namespace FTPClient.GUI.ViewModels
         public string TargetLocalFilePath => SelectedRemoteFile == null ? ""
             : (LocalDirectory.EndsWith(Path.PathSeparator) ? LocalDirectory + SelectedRemoteFile.FileName : Path.Join(LocalDirectory, SelectedRemoteFile.FileName));
 
+        public string RemoteNewFileName
+        {
+            get => _remoteNewFileName;
+            set => this.RaiseAndSetIfChanged(ref _remoteNewFileName, value);
+        }
+
         public ObservableCollection<FileModel> LocalFiles { get; }
         public ObservableCollection<RemoteFileModel> RemoteFiles { get; }
         public ObservableCollection<TransferFileModel> TransferTasks { get; }
@@ -118,6 +126,7 @@ namespace FTPClient.GUI.ViewModels
         public ReactiveCommand<Unit, Unit> DownloadSelectedFileCommand { get; }
         public ReactiveCommand<Unit, Unit> RenameSelectedRemoteFileCommand { get; }
         public ReactiveCommand<Unit, Unit> DeleteSelectedRemoteFileCommand { get; }
+        public ReactiveCommand<Unit, Unit> CreateRemoteDirectoryCommand { get; }
 
         private readonly Subject<bool> _uploadSelectedFileCommandCanExec;
         private readonly Subject<bool> _downloadSelectedFileCommandCanExec;
@@ -127,6 +136,7 @@ namespace FTPClient.GUI.ViewModels
         private IFTPClient _ftpClient;
         private FileModel _selectedLocalFile;
         private RemoteFileModel _selectedRemoteFile;
+        private string _remoteNewFileName;
 
         public MainViewModel()
         {
@@ -171,7 +181,17 @@ namespace FTPClient.GUI.ViewModels
 
             RenameSelectedRemoteFileCommand = ReactiveCommand.Create(() =>
             {
-                // TODO 重命名文件
+                // TODO 校验文件名有效性
+                // TODO 使用MaterialDesign的对话框，这里暂时先用VB里的输入框了
+                RemoteNewFileName = Interaction.InputBox("请输入新的文件名", "重命名");
+                if (string.IsNullOrEmpty(RemoteNewFileName))
+                {
+                    // MessageBox.Show("请输入有效的文件名");
+                    return;
+                }
+                _ftpClient.RenameFile(SelectedRemoteFile.FilePath,
+                    SelectedRemoteFile.FileDirectory + "/" + RemoteNewFileName);
+                ListFiles();
             }, _hasSelectedRemoteFile);
             DeleteSelectedRemoteFileCommand = ReactiveCommand.Create(() =>
             {
@@ -179,8 +199,20 @@ namespace FTPClient.GUI.ViewModels
                     _ftpClient.DeleteDirectory(SelectedRemoteFile.FilePath);
                 else
                     _ftpClient.DeleteFile(SelectedRemoteFile.FilePath);
-                ChangeRemoteDirectory(RemoteDirectory);
+                ListFiles();
             }, _hasSelectedRemoteFile);
+
+            CreateRemoteDirectoryCommand = ReactiveCommand.Create(() =>
+            {
+                RemoteNewFileName = Interaction.InputBox("请输入新的目录名字", "新建文件夹");
+                if (string.IsNullOrEmpty(RemoteNewFileName))
+                {
+                    // MessageBox.Show("请输入有效的目录名");
+                    return;
+                }
+                _ftpClient.CreateDirectory(RemoteDirectory + "/" + RemoteNewFileName);
+                ListFiles();
+            });
         }
 
         private void UploadFile(FileModel localFile, string targetPath)
@@ -290,6 +322,13 @@ namespace FTPClient.GUI.ViewModels
                 return;
             }
             _ftpClient.ChangeDirectory(path);
+            ListFiles();
+            RemoteDirectory = _ftpClient.GetCurrentDirectory();
+        }
+
+        private void ListFiles()
+        {
+            string path = RemoteDirectory;
             List<RemoteFileModel> remoteFiles = new();
 
             // 添加一个特殊目录，用于返回父级目录
@@ -317,7 +356,6 @@ namespace FTPClient.GUI.ViewModels
                 RemoteFiles.Clear();
                 RemoteFiles.AddRange(remoteFiles);
             });
-            RemoteDirectory = _ftpClient.GetCurrentDirectory();
         }
     }
 }

@@ -14,6 +14,7 @@ using System.Windows.Threading;
 using DynamicData;
 using FTPClient.Core;
 using Microsoft.VisualBasic;
+using NLog;
 using ReactiveUI;
 
 namespace FTPClient.GUI.ViewModels
@@ -138,6 +139,8 @@ namespace FTPClient.GUI.ViewModels
         private RemoteFileModel _selectedRemoteFile;
         private string _remoteNewFileName;
 
+        private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
         public MainViewModel()
         {
             _ftpClient = new FakeFTPClient();
@@ -151,9 +154,19 @@ namespace FTPClient.GUI.ViewModels
 
             ConnectFtpServerCommand = ReactiveCommand.Create(() =>
            {
+               _logger.Info("正在连接服务器...");
+               _logger.Info($"主机地址: {Host}");
+               _logger.Info($"端口: {Port}");
+               _logger.Info($"用户名: {Username}");
+               _logger.Info("密码: " + Regex.Replace(Password, ".", "*"));
+
                _ftpClient.Init(Host, Port, Username, Password);
                _ftpClient.Connect();
                Connected = _ftpClient.Connected;
+               if (Connected)
+                   _logger.Info("成功连接服务器！");
+               else
+                   _logger.Error("连接服务器失败，请确认您的信息填写是否正确！");
                ChangeRemoteDirectoryToRoot();
            });
 
@@ -161,7 +174,15 @@ namespace FTPClient.GUI.ViewModels
            {
                _ftpClient.Disconnect();
                Connected = _ftpClient.Connected;
-               if (!Connected) RemoteFiles.Clear();
+               if (!Connected)
+               {
+                   _logger.Info("成功断开服务器！");
+                   RemoteFiles.Clear();
+               }
+               else
+               {
+                   _logger.Error("暂时无法断开服务器！");
+               }
            });
 
             ChangeLocalDirectoryCommand = ReactiveCommand.CreateFromTask(new Func<string, Task<Unit>>(ChangeLocalDirectory));
@@ -170,12 +191,22 @@ namespace FTPClient.GUI.ViewModels
             // TODO 不知道这个canExecute有没有简单一点的写法
             _uploadSelectedFileCommandCanExec = new Subject<bool>();
             UploadSelectedFileCommand = ReactiveCommand.Create(
-                () => UploadFile(SelectedLocalFile, TargetRemoteFilePath),
+                () =>
+                {
+                    UploadFile(SelectedLocalFile, TargetRemoteFilePath);
+                    _logger.Info($"已添加上传任务：{SelectedLocalFile.FilePath}");
+                    _logger.Info($"上传至：{TargetRemoteFilePath}");
+                },
                 _uploadSelectedFileCommandCanExec
             );
             _downloadSelectedFileCommandCanExec = new Subject<bool>();
             DownloadSelectedFileCommand = ReactiveCommand.Create(
-                () => DownloadFile(SelectedRemoteFile, TargetLocalFilePath),
+                () =>
+                {
+                    DownloadFile(SelectedRemoteFile, TargetLocalFilePath);
+                    _logger.Info($"已添加下载任务：{SelectedRemoteFile.FilePath}");
+                    _logger.Info($"上传至：{TargetLocalFilePath}");
+                },
                 _downloadSelectedFileCommandCanExec
             );
 
@@ -189,16 +220,27 @@ namespace FTPClient.GUI.ViewModels
                     // MessageBox.Show("请输入有效的文件名");
                     return;
                 }
+
+                var newFilePath = SelectedRemoteFile.FileDirectory + "/" + RemoteNewFileName;
+                _logger.Info($"尝试重命名文件：{SelectedRemoteFile.FilePath}");
+                _logger.Info($"并重命名为：{newFilePath}");
+
                 _ftpClient.RenameFile(SelectedRemoteFile.FilePath,
-                    SelectedRemoteFile.FileDirectory + "/" + RemoteNewFileName);
+                    newFilePath);
                 ListFiles();
             }, _hasSelectedRemoteFile);
             DeleteSelectedRemoteFileCommand = ReactiveCommand.Create(() =>
             {
                 if (SelectedRemoteFile.Grants.StartsWith("d"))
+                {
+                    _logger.Info($"尝试目录文件：{SelectedRemoteFile.FilePath}");
                     _ftpClient.DeleteDirectory(SelectedRemoteFile.FilePath);
+                }
                 else
+                {
+                    _logger.Info($"尝试删除文件：{SelectedRemoteFile.FilePath}");
                     _ftpClient.DeleteFile(SelectedRemoteFile.FilePath);
+                }
                 ListFiles();
             }, _hasSelectedRemoteFile);
 
@@ -210,7 +252,11 @@ namespace FTPClient.GUI.ViewModels
                     // MessageBox.Show("请输入有效的目录名");
                     return;
                 }
-                _ftpClient.CreateDirectory(RemoteDirectory + "/" + RemoteNewFileName);
+
+                string dirPath = RemoteDirectory + "/" + RemoteNewFileName;
+                _logger.Info($"尝试新建文件夹：{dirPath}");
+
+                _ftpClient.CreateDirectory(dirPath);
                 ListFiles();
             });
         }
@@ -297,7 +343,11 @@ namespace FTPClient.GUI.ViewModels
                 }
             }
 
+
             LocalDirectory = dir;
+
+            _logger.Info($"本地工作路径：{LocalDirectory}");
+
             UIUtils.RunOnUIThread(() =>
             {
                 LocalFiles.Clear();
@@ -323,6 +373,9 @@ namespace FTPClient.GUI.ViewModels
             }
             _ftpClient.ChangeDirectory(path);
             RemoteDirectory = _ftpClient.GetCurrentDirectory();
+
+            _logger.Info($"远程工作路径：{LocalDirectory}");
+
             ListFiles();
         }
 

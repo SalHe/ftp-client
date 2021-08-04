@@ -3,7 +3,18 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
-    <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MaterialDesignThemes" Version="4.1.0" />
+    <PackageReference Include="ReactiveUI" Version="14.2.1" />
+    <PackageReference Include="ReactiveUI.Events.WPF" Version="14.2.1" />
+    <PackageReference Include="ReactiveUI.WPF" Version="14.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FTPClient.Core\FTPClient.Core.csproj" />
+  </ItemGroup>
 
 </Project>

@@ -1,0 +1,264 @@
+﻿<Window x:Class="FTPClient.GUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FTPClient.GUI"
+        xmlns:viewModels="clr-namespace:FTPClient.GUI.ViewModels"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        Title="FTP Client" Height="700" Width="1200"
+        Closing="MainWindow_OnClosing" Closed="MainWindow_OnClosed">
+
+    <Window.DataContext>
+        <viewModels:MainViewModel/>
+    </Window.DataContext>
+
+    <Grid Margin="8">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32"/>
+            <RowDefinition Height="2*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="24"/>
+        </Grid.RowDefinitions>
+
+        <!-- FTP服务器参数区域 -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="100"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">主机地址：</TextBlock>
+            <TextBox Grid.Column="1" VerticalAlignment="Center"  Text="{Binding Host}" IsEnabled="{Binding NotConnected}"/>
+
+            <TextBlock Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">端口：</TextBlock>
+            <TextBox Grid.Column="3" VerticalAlignment="Center" Text="{Binding Port}" IsEnabled="{Binding NotConnected}"/>
+
+            <TextBlock Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Right">用户名：</TextBlock>
+            <TextBox Grid.Column="5" VerticalAlignment="Center" Text="{Binding Username}" IsEnabled="{Binding NotConnected}"/>
+
+            <TextBlock Grid.Column="6" VerticalAlignment="Center" HorizontalAlignment="Right">密码：</TextBlock>
+            <TextBox Grid.Column="7" VerticalAlignment="Center"  Text="{Binding Password}" IsEnabled="{Binding NotConnected}"/>
+
+            <Button Grid.Column="8" Width="80" Content="连接" 
+                    VerticalAlignment="Center" HorizontalAlignment="Center"
+                    IsEnabled="{Binding NotConnected}"
+                    Command="{Binding ConnectFtpServerCommand}"/>
+            <Button Grid.Column="9" Width="80" Content="断开"
+                    VerticalAlignment="Center" HorizontalAlignment="Center"
+                    IsEnabled="{Binding Connected}"
+                    Command="{Binding DisconnectFromFtpServeCommand}"/>
+        </Grid>
+
+        <!-- 文件列表 -->
+        <Grid Grid.Row="1" Margin="0 10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 本地文件 -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="32"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="0 0 5 5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" VerticalAlignment="Center">本地路径：</TextBlock>
+                    <TextBox Grid.Column="1" Text="{Binding LocalDirectory}"/>
+                </Grid>
+                <DataGrid Grid.Row="1" Margin="0 0 5 5"
+                          ItemsSource="{Binding LocalFiles}" AutoGenerateColumns="False"
+                          IsReadOnly="True" SelectionUnit="FullRow"
+                          SelectedItem="{Binding SelectedLocalFile, Mode=OneWayToSource}">
+                    <DataGrid.InputBindings>
+                        <MouseBinding Gesture="LeftDoubleClick" 
+                                                              Command="{Binding ChangeLocalDirectoryCommand}" 
+                                                              CommandParameter="{Binding Path=SelectedItem.FilePath, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                    </DataGrid.InputBindings>
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="文件名" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Width="16" Height="16" VerticalAlignment="Center" Margin="2" Source="{Binding FileIcon}"/>
+                                        <TextBlock Text="{Binding FileName}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <!-- <DataGridTextColumn Header="文件名" Width="*" Binding="{Binding FileName}"/> -->
+                        <DataGridTextColumn Header="大小" Width="120" Binding="{Binding Size}"/>
+                        <DataGridTextColumn Header="修改时间" Binding="{Binding Time}"/>
+                    </DataGrid.Columns>
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Height="100" Command="{Binding UploadSelectedFileCommand}">
+                                <MenuItem.Header>
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBlock Margin="0 4"  Text="上传文件"/>
+                                        <StackPanel Orientation="Vertical" Margin="30 0">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Label Content="从"/>
+                                                <Image Width="16" Height="16" Source="{Binding SelectedLocalFile.FileIcon}"/>
+                                                <Label Content="{Binding SelectedLocalFile.FilePath}"/>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Label Content="到"/>
+                                                <Image Width="16" Height="16" Source="{Binding SelectedLocalFile.FileIcon}"/>
+                                                <Label Content="{Binding TargetRemoteFilePath}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </MenuItem.Header>
+                            </MenuItem>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
+                </DataGrid>
+            </Grid>
+
+            <!-- 远程文件 -->
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="32"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="5 0 0 5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" VerticalAlignment="Center">远程路径：</TextBlock>
+                    <TextBox Grid.Column="1" Text="{Binding RemoteDirectory}"/>
+                </Grid>
+                <DataGrid Grid.Row="1" Margin="5 0 0 5"
+                                                ItemsSource="{Binding RemoteFiles}" AutoGenerateColumns="False"
+                                                IsReadOnly="True" SelectionUnit="FullRow"
+                                                SelectedItem="{Binding SelectedRemoteFile, Mode=OneWayToSource}">
+                    <DataGrid.InputBindings>
+                        <MouseBinding Gesture="LeftDoubleClick" 
+                                      Command="{Binding ChangeRemoteDirectoryCommand}" 
+                                      CommandParameter="{Binding Path=SelectedItem, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                    </DataGrid.InputBindings>
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="文件名" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Width="16" Height="16" VerticalAlignment="Center" Margin="2" Source="{Binding FileIcon}"/>
+                                        <TextBlock Text="{Binding FileName}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <!-- <DataGridTextColumn Header="文件名" Width="*" Binding="{Binding FileName}"/> -->
+                        <DataGridTextColumn Header="大小" Width="120" Binding="{Binding Size}"/>
+                        <DataGridTextColumn Header="修改时间" Binding="{Binding Time}"/>
+                        <DataGridTextColumn Header="权限" Binding="{Binding Grants}"/>
+                        <DataGridTextColumn Header="用户组" Binding="{Binding Owner}"/>
+                    </DataGrid.Columns>
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="新建文件夹" Command="{Binding CreateRemoteDirectoryCommand}" IsEnabled="{Binding Connected}"/>
+                            <MenuItem Height="100" Command="{Binding DownloadSelectedFileCommand}">
+                                <MenuItem.Header>
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBlock Margin="0 4"  Text="下载文件"/>
+                                        <StackPanel Orientation="Vertical" Margin="30 0">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Label Content="从"/>
+                                                <Image Width="16" Height="16" Source="{Binding SelectedRemoteFile.FileIcon}"/>
+                                                <Label Content="{Binding SelectedRemoteFile.FilePath}"/>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Label Content="到"/>
+                                                <Image Width="16" Height="16" Source="{Binding SelectedRemoteFile.FileIcon}"/>
+                                                <Label Content="{Binding TargetLocalFilePath}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </MenuItem.Header>
+                            </MenuItem>
+                            <MenuItem Header="重命名" Command="{Binding RenameSelectedRemoteFileCommand}"/>
+                            <MenuItem Header="删除" Command="{Binding DeleteSelectedRemoteFileCommand}"/>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
+                </DataGrid>
+
+            </Grid>
+
+        </Grid>
+
+        <!-- 传输队列 -->
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="24"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" VerticalAlignment="Center">传输队列：</TextBlock>
+            <DataGrid Grid.Row="1" Margin="5 0"
+                      ItemsSource="{Binding TransferTasks}" AutoGenerateColumns="False"
+                      IsReadOnly="True" SelectionUnit="FullRow">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="本地文件路径" Width="*" Binding="{Binding FilePath}"/>
+                    <DataGridTextColumn Header="方向" Width="100" Binding="{Binding TransferDirection}"/>
+                    <DataGridTextColumn Header="远程文件路径" Width="*" Binding="{Binding RemoteFilePath}"/>
+                    <DataGridTextColumn Header="大小" Width="120" Binding="{Binding Size}"/>
+                    <DataGridTemplateColumn Header="进度" Width="200">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ProgressBar Height="15"
+                                    Minimum="0" Maximum="100"
+                                    Value="{Binding Progress}"
+                                    ToolTip="{Binding Progress}"></ProgressBar>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="状态" Width="120" Binding="{Binding TransferStatus}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+
+        <!-- 日志 -->
+        <Grid Grid.Row="3">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="24"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" VerticalAlignment="Center">日志：</TextBlock>
+            <RichTextBox x:Name="richTextBox_Log"  Grid.Row="1" AcceptsReturn="True" IsReadOnly="True"/>
+        </Grid>
+
+        <!-- 命令 -->
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="32"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Row="0" VerticalAlignment="Center">命令：</TextBlock>
+            <TextBox Grid.Column="1"/>
+        </Grid>
+
+
+    </Grid>
+</Window>

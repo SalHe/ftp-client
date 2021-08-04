@@ -139,7 +139,7 @@ namespace FTPClient.Core
             var random = new Random();
             for (int i = 0; i <= 100; i++)
             {
-                if (random.Next(10) > 7)
+                if (random.Next(1000) >= 995)
                 {
                     reportProgressFunction(i / 100f, true, false);
                     return;

@@ -7,11 +7,13 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 
 namespace FTPClient.Core
 {
     public class FakeFTPClient : IFTPClient
     {
+        private readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private bool _connected;
         private string _host;
         private int _port;
@@ -61,28 +63,28 @@ namespace FTPClient.Core
             if (path.Equals("")) path = "/";
             if ("/".Equals(path) || Regex.IsMatch(path, @"folder\d+$"))
                 _currentDir = path;
-            Debug.WriteLine($"切换目录：{_currentDir}");
+            _logger.Debug($"切换目录：{_currentDir}");
         }
 
         public void CreateDirectory(string path)
         {
-            Debug.WriteLine($"创建文件夹：{path}");
+            _logger.Debug($"创建文件夹：{path}");
         }
 
         public void DeleteDirectory(string path)
         {
-            Debug.WriteLine($"删除文件夹：{path}");
+            _logger.Debug($"删除文件夹：{path}");
         }
 
         public void DeleteFile(string file)
         {
-            Debug.WriteLine($"删除文件：{file}");
+            _logger.Debug($"删除文件：{file}");
         }
 
         public void RenameFile(string filePath, string newFilePath)
         {
-            Debug.WriteLine($"重命名：{filePath}");
-            Debug.WriteLine($"新文件名：{newFilePath}");
+            _logger.Debug($"重命名：{filePath}");
+            _logger.Debug($"新文件名：{newFilePath}");
         }
 
         public string GetCurrentDirectory()
@@ -127,8 +129,8 @@ namespace FTPClient.Core
                     Time = DateTime.Now.ToString()
                 });
             }
-            Debug.WriteLine("文件列表：");
-            files.ForEach(x => Debug.WriteLine(x));
+            _logger.Debug("文件列表：...");
+            // files.ForEach(x => _logger.Debug(x));
             return files.ToArray();
         }
 

@@ -7,7 +7,8 @@
         xmlns:viewModels="clr-namespace:FTPClient.GUI.ViewModels"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        Title="FTP Client" Height="700" Width="1200">
+        Title="FTP Client" Height="700" Width="1200"
+        Closing="MainWindow_OnClosing" Closed="MainWindow_OnClosed">
 
     <Window.DataContext>
         <viewModels:MainViewModel/>

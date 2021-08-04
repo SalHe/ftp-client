@@ -37,5 +37,10 @@ namespace FTPClient.Core
         /// 拥有者用户组别。
         /// </summary>
         public string OwnerGroup { get; set; }
+
+        public override string ToString()
+        {
+            return $"{nameof(Grants)}: {Grants}, {nameof(Size)}: {Size}, {nameof(Time)}: {Time}, {nameof(Owner)}: {Owner}, {nameof(OwnerGroup)}: {OwnerGroup}";
+        }
     }
 }

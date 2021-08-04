@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -60,26 +61,28 @@ namespace FTPClient.Core
             if (path.Equals("")) path = "/";
             if ("/".Equals(path) || Regex.IsMatch(path, @"folder\d+$"))
                 _currentDir = path;
+            Debug.WriteLine($"切换目录：{_currentDir}");
         }
 
         public void CreateDirectory(string path)
         {
-
+            Debug.WriteLine($"创建文件夹：{path}");
         }
 
         public void DeleteDirectory(string path)
         {
-
+            Debug.WriteLine($"删除文件夹：{path}");
         }
 
         public void DeleteFile(string file)
         {
-
+            Debug.WriteLine($"删除文件：{file}");
         }
 
         public void RenameFile(string filePath, string newFilePath)
         {
-            
+            Debug.WriteLine($"重命名：{filePath}");
+            Debug.WriteLine($"新文件名：{newFilePath}");
         }
 
         public string GetCurrentDirectory()
@@ -124,7 +127,8 @@ namespace FTPClient.Core
                     Time = DateTime.Now.ToString()
                 });
             }
-
+            Debug.WriteLine("文件列表：");
+            files.ForEach(x => Debug.WriteLine(x));
             return files.ToArray();
         }
 

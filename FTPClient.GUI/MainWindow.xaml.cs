@@ -35,6 +35,7 @@ namespace FTPClient.GUI
 
         private Thread _transferringThread;
         private IList<Thread> _addTaskThreads = new List<Thread>();
+        private Logger _logger = LogManager.GetCurrentClassLogger();
 
         object? IViewFor.ViewModel
         {
@@ -86,9 +87,39 @@ namespace FTPClient.GUI
             void ReportProgress(float percent, bool failed, bool finished)
             {
                 if (failed)
+                {
                     transferringFile.TransferStatus = TransferStatus.Error;
+
+                    if (transferringFile.TransferDirection == TransferDirection.Upload)
+                    {
+                        _logger.Error("上传文件失败！");
+                        _logger.Error($"从 {transferringFile.FilePath}");
+                        _logger.Error($"到 {transferringFile.RemoteFilePath}");
+                    }
+                    else if (transferringFile.TransferDirection == TransferDirection.Download)
+                    {
+                        _logger.Error("下载文件失败！");
+                        _logger.Error($"从 {transferringFile.RemoteFilePath}");
+                        _logger.Error($"到 {transferringFile.FilePath}");
+                    }
+                }
                 else if (finished)
+                {
                     transferringFile.TransferStatus = TransferStatus.Done;
+
+                    if (transferringFile.TransferDirection == TransferDirection.Upload)
+                    {
+                        _logger.Info("上传文件成功！");
+                        _logger.Info($"从 {transferringFile.FilePath}");
+                        _logger.Info($"到 {transferringFile.RemoteFilePath}");
+                    }
+                    else if (transferringFile.TransferDirection == TransferDirection.Download)
+                    {
+                        _logger.Info("下载文件成功！");
+                        _logger.Info($"从 {transferringFile.RemoteFilePath}");
+                        _logger.Info($"到 {transferringFile.FilePath}");
+                    }
+                }
                 else
                     transferringFile.TransferStatus = TransferStatus.Transferring;
 
@@ -101,11 +132,24 @@ namespace FTPClient.GUI
                 while (hasTaskSemaphore.WaitOne())
                 {
                     if (transferringFile.TransferDirection == TransferDirection.Upload)
+                    {
+                        _logger.Info("开始上传文件：");
+                        _logger.Info($"从 {transferringFile.FilePath}");
+                        _logger.Info($"到 {transferringFile.RemoteFilePath}");
+
                         ViewModel.FTPClient.UploadFile(transferringFile.FilePath, transferringFile.RemoteFilePath,
-                            ReportProgress);
+                               ReportProgress);
+                    }
                     else if (transferringFile.TransferDirection == TransferDirection.Download)
+                    {
+                        _logger.Info("开始下载文件：");
+                        _logger.Info($"从 {transferringFile.RemoteFilePath}");
+                        _logger.Info($"到 {transferringFile.FilePath}");
+
                         ViewModel.FTPClient.DownloadFile(transferringFile.RemoteFilePath, transferringFile.FilePath,
                             ReportProgress);
+                    }
+
                     noTaskTransferringSpSemaphore.Release();
                 }
             });

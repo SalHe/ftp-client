@@ -26,7 +26,7 @@ namespace FTPClient.GUI.ViewModels
         private string _password = string.Empty;
         private bool _connected;
         private string _localDirectory;
-        private string _remoteDirectory;
+        private string _remoteDirectory = string.Empty;
 
         public string Host
         {
@@ -84,9 +84,23 @@ namespace FTPClient.GUI.ViewModels
             }
         }
 
-        public RemoteFileModel SelectedRemoteFile { get; set; }
+        private readonly Subject<bool> _hasSelectedRemoteFile;
+        public RemoteFileModel SelectedRemoteFile
+        {
+            get => _selectedRemoteFile;
+            set
+            {
+                _hasSelectedRemoteFile.OnNext(value != null);
+                this.RaiseAndSetIfChanged(ref _selectedRemoteFile, value);
+                this.RaisePropertyChanged(nameof(TargetLocalFilePath));
+                _downloadSelectedFileCommandCanExec.OnNext(Connected && SelectedRemoteFile != null && !SelectedRemoteFile.Grants.StartsWith("d"));
+            }
+        }
+
         public string TargetRemoteFilePath => SelectedLocalFile == null ? ""
             : (RemoteDirectory.EndsWith("/") ? RemoteDirectory + SelectedLocalFile.FileName : RemoteDirectory + "/" + SelectedLocalFile.FileName);
+        public string TargetLocalFilePath => SelectedRemoteFile == null ? ""
+            : (LocalDirectory.EndsWith(Path.PathSeparator) ? LocalDirectory + SelectedRemoteFile.FileName : Path.Join(LocalDirectory, SelectedRemoteFile.FileName));
 
         public ObservableCollection<FileModel> LocalFiles { get; }
         public ObservableCollection<RemoteFileModel> RemoteFiles { get; }
@@ -101,17 +115,25 @@ namespace FTPClient.GUI.ViewModels
         public ReactiveCommand<string, Unit> ChangeLocalDirectoryCommand { get; }
         public ReactiveCommand<RemoteFileModel, Unit> ChangeRemoteDirectoryCommand { get; }
         public ReactiveCommand<Unit, Unit> UploadSelectedFileCommand { get; }
+        public ReactiveCommand<Unit, Unit> DownloadSelectedFileCommand { get; }
+        public ReactiveCommand<Unit, Unit> RenameSelectedRemoteFileCommand { get; }
+        public ReactiveCommand<Unit, Unit> DeleteSelectedRemoteFileCommand { get; }
 
-        private Subject<bool> _uploadSelectedFileCommandCanExec;
+        private readonly Subject<bool> _uploadSelectedFileCommandCanExec;
+        private readonly Subject<bool> _downloadSelectedFileCommandCanExec;
 
         #endregion
 
         private IFTPClient _ftpClient;
         private FileModel _selectedLocalFile;
+        private RemoteFileModel _selectedRemoteFile;
 
         public MainViewModel()
         {
             _ftpClient = new FakeFTPClient();
+
+            _hasSelectedRemoteFile = new();
+            _hasSelectedRemoteFile.OnNext(false);
 
             LocalFiles = new();
             RemoteFiles = new();
@@ -141,6 +163,24 @@ namespace FTPClient.GUI.ViewModels
                 () => UploadFile(SelectedLocalFile, TargetRemoteFilePath),
                 _uploadSelectedFileCommandCanExec
             );
+            _downloadSelectedFileCommandCanExec = new Subject<bool>();
+            DownloadSelectedFileCommand = ReactiveCommand.Create(
+                () => DownloadFile(SelectedRemoteFile, TargetLocalFilePath),
+                _downloadSelectedFileCommandCanExec
+            );
+
+            RenameSelectedRemoteFileCommand = ReactiveCommand.Create(() =>
+            {
+                // TODO 重命名文件
+            }, _hasSelectedRemoteFile);
+            DeleteSelectedRemoteFileCommand = ReactiveCommand.Create(() =>
+            {
+                if (SelectedRemoteFile.Grants.StartsWith("d"))
+                    _ftpClient.DeleteDirectory(SelectedRemoteFile.FilePath);
+                else
+                    _ftpClient.DeleteFile(SelectedRemoteFile.FilePath);
+                ChangeRemoteDirectory(RemoteDirectory);
+            }, _hasSelectedRemoteFile);
         }
 
         private void UploadFile(FileModel localFile, string targetPath)
@@ -152,6 +192,20 @@ namespace FTPClient.GUI.ViewModels
                 RemoteFilePath = targetPath,
                 Size = localFile.Size,
                 Time = localFile.Time,
+                Progress = 0,
+                TransferStatus = TransferStatus.Ready
+            });
+        }
+
+        private void DownloadFile(RemoteFileModel remoteFile, string targetPath)
+        {
+            TransferTasks.Add(new TransferFileModel()
+            {
+                FilePath = targetPath,
+                TransferDirection = TransferDirection.Download,
+                RemoteFilePath = remoteFile.FilePath,
+                Size = remoteFile.Size,
+                Time = remoteFile.Time,
                 Progress = 0,
                 TransferStatus = TransferStatus.Ready
             });

@@ -115,10 +115,12 @@
                                         <StackPanel Orientation="Vertical" Margin="30 0">
                                             <StackPanel Orientation="Horizontal">
                                                 <Label Content="从"/>
+                                                <Image Width="16" Height="16" Source="{Binding SelectedLocalFile.FileIcon}"/>
                                                 <Label Content="{Binding SelectedLocalFile.FilePath}"/>
                                             </StackPanel>
                                             <StackPanel Orientation="Horizontal">
                                                 <Label Content="到"/>
+                                                <Image Width="16" Height="16" Source="{Binding SelectedLocalFile.FileIcon}"/>
                                                 <Label Content="{Binding TargetRemoteFilePath}"/>
                                             </StackPanel>
                                         </StackPanel>
@@ -171,6 +173,31 @@
                         <DataGridTextColumn Header="权限" Binding="{Binding Grants}"/>
                         <DataGridTextColumn Header="用户组" Binding="{Binding Owner}"/>
                     </DataGrid.Columns>
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Height="100" Command="{Binding DownloadSelectedFileCommand}">
+                                <MenuItem.Header>
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBlock Margin="0 4"  Text="下载文件"/>
+                                        <StackPanel Orientation="Vertical" Margin="30 0">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Label Content="从"/>
+                                                <Image Width="16" Height="16" Source="{Binding SelectedRemoteFile.FileIcon}"/>
+                                                <Label Content="{Binding SelectedRemoteFile.FilePath}"/>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Label Content="到"/>
+                                                <Image Width="16" Height="16" Source="{Binding SelectedRemoteFile.FileIcon}"/>
+                                                <Label Content="{Binding TargetLocalFilePath}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </MenuItem.Header>
+                            </MenuItem>
+                            <MenuItem Header="重命名" Command="{Binding RenameSelectedRemoteFileCommand}"/>
+                            <MenuItem Header="删除" Command="{Binding DeleteSelectedRemoteFileCommand}"/>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
                 </DataGrid>
 
             </Grid>

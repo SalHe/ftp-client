@@ -37,6 +37,9 @@ namespace FTPClient.GUI
             ViewModel = new MainViewModel();
             DataContext = ViewModel;
 
+            // TODO 上传下载的任务调度
+
+
             InitializeDirectories();
         }
 

@@ -26,7 +26,7 @@ namespace FTPClient.Core
         /// <summary>
         /// 修改时间。
         /// </summary>
-        public string Time { get; set; }
+        public DateTime Time { get; set; }
 
         /// <summary>
         /// 拥有者。

@@ -112,7 +112,7 @@ namespace FTPClient.Core
                     Owner = "owner",
                     OwnerGroup = "group",
                     Size = -1,
-                    Time = DateTime.Now.ToString()
+                    Time = DateTime.Now
                 });
             }
 
@@ -126,7 +126,7 @@ namespace FTPClient.Core
                     Owner = "owner",
                     OwnerGroup = "group",
                     Size = random.Next(),
-                    Time = DateTime.Now.ToString()
+                    Time = DateTime.Now
                 });
             }
             _logger.Debug("文件列表：...");

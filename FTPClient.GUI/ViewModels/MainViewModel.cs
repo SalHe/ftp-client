@@ -400,7 +400,7 @@ namespace FTPClient.GUI.ViewModels
                     Size = ftpFile.Size,
                     Grants = ftpFile.Grants,
                     Owner = ftpFile.Owner + "/" + ftpFile.OwnerGroup,
-                    Time = DateTime.Parse(ftpFile.Time)
+                    Time = ftpFile.Time
                 });
             }
 

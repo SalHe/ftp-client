@@ -61,8 +61,8 @@ namespace FTPClient.Core
                 file = new FTPFile()
                 {
                     Grants = line.Substring(0, 10),
-                    Owner = line.Substring(16, 8),
-                    OwnerGroup = line.Substring(26, 8),
+                    Owner = line.Substring(16, 8).Trim(),
+                    OwnerGroup = line.Substring(25, 8).Trim(),
                     Size = int.Parse(line.Substring(34, 8)),
                     Time = DateTime.Parse(line.Substring(43, 12)),
                     FilePath = baseDir + "/" + line.Substring(56)
@@ -75,8 +75,8 @@ namespace FTPClient.Core
                 file = new FTPFile()
                 {
                     Grants = line.Substring(0, 10),
-                    Owner = line.Substring(13, 3),
-                    OwnerGroup = line.Substring(13, 3),
+                    Owner = line.Substring(13, 3).Trim(),
+                    OwnerGroup = line.Substring(13, 3).Trim(),
                     Size = int.Parse(line.Substring(21, 14)),
                     Time = DateTime.Parse(line.Substring(36, 12)),
                     FilePath = baseDir + "/" + line.Substring(49)

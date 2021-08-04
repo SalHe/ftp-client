@@ -92,7 +92,17 @@
                                                               CommandParameter="{Binding Path=SelectedItem.FilePath, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" />
                     </DataGrid.InputBindings>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="文件名" Width="*" Binding="{Binding FileName}"/>
+                        <DataGridTemplateColumn Header="文件名" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Width="16" Height="16" VerticalAlignment="Center" Margin="2" Source="{Binding FileIcon}"/>
+                                        <TextBlock Text="{Binding FileName}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <!-- <DataGridTextColumn Header="文件名" Width="*" Binding="{Binding FileName}"/> -->
                         <DataGridTextColumn Header="大小" Width="120" Binding="{Binding Size}"/>
                         <DataGridTextColumn Header="修改时间" Binding="{Binding Time}"/>
                     </DataGrid.Columns>
@@ -123,7 +133,17 @@
                                       CommandParameter="{Binding Path=SelectedItem.FilePath, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" />
                     </DataGrid.InputBindings>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="文件名" Width="*" Binding="{Binding FileName}"/>
+                        <DataGridTemplateColumn Header="文件名" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Width="16" Height="16" VerticalAlignment="Center" Margin="2" Source="{Binding FileIcon}"/>
+                                        <TextBlock Text="{Binding FileName}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <!-- <DataGridTextColumn Header="文件名" Width="*" Binding="{Binding FileName}"/> -->
                         <DataGridTextColumn Header="大小" Width="120" Binding="{Binding Size}"/>
                         <DataGridTextColumn Header="修改时间" Binding="{Binding Time}"/>
                         <DataGridTextColumn Header="权限" Binding="{Binding Grants}"/>

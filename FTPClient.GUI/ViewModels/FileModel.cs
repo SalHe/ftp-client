@@ -1,10 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Interop;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using ReactiveUI;
 
 namespace FTPClient.GUI.ViewModels
@@ -14,6 +20,8 @@ namespace FTPClient.GUI.ViewModels
         private long _size;
         private DateTime _time;
         private string _filePath;
+        private BitmapSource _fileIcon;
+
 
         public string FilePath
         {
@@ -22,6 +30,12 @@ namespace FTPClient.GUI.ViewModels
             {
                 this.RaiseAndSetIfChanged(ref _filePath, value);
                 this.RaisePropertyChanged(nameof(FileName));
+
+                UIUtils.RunOnUIThread(() =>
+                {
+                    // TODO 处理文件夹图标
+                    FileIcon = FileIcons.GetFileIcon(_filePath);
+                });
             }
         }
         public string FileName
@@ -33,7 +47,6 @@ namespace FTPClient.GUI.ViewModels
                 return Path.GetFileName(FilePath);
             }
         }
-
         public long Size
         {
             get => _size;
@@ -43,6 +56,12 @@ namespace FTPClient.GUI.ViewModels
         {
             get => _time;
             set => this.RaiseAndSetIfChanged(ref _time, value);
+        }
+
+        public BitmapSource FileIcon
+        {
+            get => _fileIcon;
+            set => this.RaiseAndSetIfChanged(ref _fileIcon, value);
         }
     }
 }

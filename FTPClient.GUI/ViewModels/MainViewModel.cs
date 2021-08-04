@@ -151,7 +151,7 @@ namespace FTPClient.GUI.ViewModels
             }
 
             LocalDirectory = dir;
-            RunOnUIThread(() =>
+            UIUtils.RunOnUIThread(() =>
             {
                 LocalFiles.Clear();
                 LocalFiles.AddRange(files);
@@ -163,7 +163,7 @@ namespace FTPClient.GUI.ViewModels
         {
             // TODO 获取远程的文件列表
             RemoteDirectory = dir;
-            RunOnUIThread(() =>
+            UIUtils.RunOnUIThread(() =>
             {
                 RemoteFiles.Clear();
                 RemoteFiles.Add(new RemoteFileModel()
@@ -184,19 +184,6 @@ namespace FTPClient.GUI.ViewModels
                 });
             });
             return Unit.Default;
-        }
-
-        private void RunOnUIThread(Action action)
-        {
-            ThreadPool.QueueUserWorkItem(delegate
-            {
-                SynchronizationContext.SetSynchronizationContext(new
-                    DispatcherSynchronizationContext(System.Windows.Application.Current.Dispatcher));
-                SynchronizationContext.Current.Post(pl =>
-                {
-                    action();
-                }, null);
-            });
         }
     }
 }

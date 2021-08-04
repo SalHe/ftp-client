@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="MaterialDesignThemes" Version="4.1.0" />
+    <PackageReference Include="NLog" Version="4.7.10" />
     <PackageReference Include="ReactiveUI" Version="14.1.1" />
     <PackageReference Include="ReactiveUI.Events.WPF" Version="14.1.1" />
     <PackageReference Include="ReactiveUI.WPF" Version="14.1.1" />

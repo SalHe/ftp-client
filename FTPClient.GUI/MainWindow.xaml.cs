@@ -12,7 +12,12 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using FTPClient.GUI.NLog;
 using FTPClient.GUI.ViewModels;
+using NLog;
+using NLog.Config;
+using NLog.Layouts;
+using NLog.Targets.Wrappers;
 using ReactiveUI;
 
 namespace FTPClient.GUI
@@ -39,8 +44,27 @@ namespace FTPClient.GUI
 
             // TODO 上传下载的任务调度
 
-
+            InitializeNLog();
             InitializeDirectories();
+        }
+
+        private void InitializeNLog()
+        {
+            var target = new MyRichTextBoxTarget(richTextBox_Log);
+            var asyncWrapper = new AsyncTargetWrapper { Name = "RichTextAsync", WrappedTarget = target };
+
+            LogManager.Configuration = new LoggingConfiguration();
+            LogManager.Configuration.AddTarget(asyncWrapper.Name, asyncWrapper);
+            LogManager.Configuration.LoggingRules.Insert(0, new LoggingRule("*", LogLevel.Debug, asyncWrapper));
+            LogManager.ReconfigExistingLoggers();
+
+            // Logger logger = LogManager.GetCurrentClassLogger();
+            // logger.Trace("Trace log");
+            // logger.Debug("Debug log");
+            // logger.Info("Info log");
+            // logger.Warn("Warn log");
+            // logger.Error("Error log");
+            // logger.Fatal("Fatal log");
         }
 
         private void InitializeDirectories()

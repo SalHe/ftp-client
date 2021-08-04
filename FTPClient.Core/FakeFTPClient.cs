@@ -77,6 +77,11 @@ namespace FTPClient.Core
 
         }
 
+        public void RenameFile(string filePath, string newFilePath)
+        {
+            
+        }
+
         public string GetCurrentDirectory()
         {
             if (!Connected)

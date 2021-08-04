@@ -48,12 +48,6 @@ namespace FTPClient.Core
         void ChangeDirectory(string path);
 
         /// <summary>
-        /// 创建目录。
-        /// </summary>
-        /// <param name="path">目录路径</param>
-        void CreateDirectory(string path);
-
-        /// <summary>
         /// 删除目录。
         /// </summary>
         /// <param name="path">目录路径</param>
@@ -64,6 +58,13 @@ namespace FTPClient.Core
         /// </summary>
         /// <param name="file">文件路径</param>
         void DeleteFile(string file);
+
+        /// <summary>
+        /// 重命名文件。
+        /// </summary>
+        /// <param name="filePath">文件完整路径</param>
+        /// <param name="newFilePath">新文件完整路径</param>
+        void RenameFile(string filePath, string newFilePath);
 
         /// <summary>
         /// 获取当前目录。

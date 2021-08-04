@@ -271,7 +271,7 @@ namespace FTPClient.GUI.ViewModels
                 Size = localFile.Size,
                 Time = localFile.Time,
                 Progress = 0,
-                TransferStatus = TransferStatus.Ready
+                TransferStatus = TransferStatus.Waiting
             });
         }
 
@@ -285,7 +285,7 @@ namespace FTPClient.GUI.ViewModels
                 Size = remoteFile.Size,
                 Time = remoteFile.Time,
                 Progress = 0,
-                TransferStatus = TransferStatus.Ready
+                TransferStatus = TransferStatus.Waiting
             });
         }
 

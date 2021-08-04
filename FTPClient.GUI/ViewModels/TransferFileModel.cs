@@ -44,6 +44,6 @@ namespace FTPClient.GUI.ViewModels
 
     public enum TransferStatus
     {
-        Ready, Transferring, Done, Error
+        Waiting, Transferring, Done, Error
     }
 }

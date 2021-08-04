@@ -107,6 +107,7 @@ namespace FTPClient.GUI.ViewModels
             var files = new List<FileModel>();
             if (string.IsNullOrEmpty(dir) || Regex.IsMatch(dir, @"^\w:\\+\.\.$"))
             {
+                dir = "";
                 // 当路径为空时或者从驱动器根目录回退时展示驱动器
                 foreach (string drive in Directory.GetLogicalDrives())
                 {

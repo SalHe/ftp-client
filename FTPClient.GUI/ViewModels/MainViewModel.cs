@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Reactive;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -64,8 +66,28 @@ namespace FTPClient.GUI.ViewModels
         public string RemoteDirectory
         {
             get => _remoteDirectory;
-            set => this.RaiseAndSetIfChanged(ref _remoteDirectory, value);
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _remoteDirectory, value);
+                this.RaisePropertyChanged(nameof(TargetRemoteFilePath));
+            }
         }
+
+        public FileModel SelectedLocalFile
+        {
+            get => _selectedLocalFile;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _selectedLocalFile, value);
+                this.RaisePropertyChanged(nameof(TargetRemoteFilePath));
+                _uploadSelectedFileCommandCanExec.OnNext(Connected && SelectedLocalFile != null && File.Exists(SelectedLocalFile.FilePath));
+            }
+        }
+
+        public RemoteFileModel SelectedRemoteFile { get; set; }
+        public string TargetRemoteFilePath => SelectedLocalFile == null ? ""
+            : (RemoteDirectory.EndsWith("/") ? RemoteDirectory + SelectedLocalFile.FileName : RemoteDirectory + "/" + SelectedLocalFile.FileName);
+
         public ObservableCollection<FileModel> LocalFiles { get; }
         public ObservableCollection<RemoteFileModel> RemoteFiles { get; }
         public ObservableCollection<TransferFileModel> TransferTasks { get; }
@@ -78,10 +100,14 @@ namespace FTPClient.GUI.ViewModels
         public ReactiveCommand<Unit, Unit> DisconnectFromFtpServeCommand { get; }
         public ReactiveCommand<string, Unit> ChangeLocalDirectoryCommand { get; }
         public ReactiveCommand<RemoteFileModel, Unit> ChangeRemoteDirectoryCommand { get; }
+        public ReactiveCommand<Unit, Unit> UploadSelectedFileCommand { get; }
+
+        private Subject<bool> _uploadSelectedFileCommandCanExec;
 
         #endregion
 
         private IFTPClient _ftpClient;
+        private FileModel _selectedLocalFile;
 
         public MainViewModel()
         {
@@ -108,6 +134,27 @@ namespace FTPClient.GUI.ViewModels
 
             ChangeLocalDirectoryCommand = ReactiveCommand.CreateFromTask(new Func<string, Task<Unit>>(ChangeLocalDirectory));
             ChangeRemoteDirectoryCommand = ReactiveCommand.CreateFromTask(new Func<RemoteFileModel, Task<Unit>>(ChangeRemoteDirectory));
+
+            // TODO 不知道这个canExecute有没有简单一点的写法
+            _uploadSelectedFileCommandCanExec = new Subject<bool>();
+            UploadSelectedFileCommand = ReactiveCommand.Create(
+                () => UploadFile(SelectedLocalFile, TargetRemoteFilePath),
+                _uploadSelectedFileCommandCanExec
+            );
+        }
+
+        private void UploadFile(FileModel localFile, string targetPath)
+        {
+            TransferTasks.Add(new TransferFileModel()
+            {
+                FilePath = localFile.FilePath,
+                TransferDirection = TransferDirection.Upload,
+                RemoteFilePath = targetPath,
+                Size = localFile.Size,
+                Time = localFile.Time,
+                Progress = 0,
+                TransferStatus = TransferStatus.Ready
+            });
         }
 
         public void ChangeRemoteDirectoryToRoot()

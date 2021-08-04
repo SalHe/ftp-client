@@ -37,37 +37,16 @@ namespace FTPClient.GUI
             ViewModel = new MainViewModel();
             DataContext = ViewModel;
 
-            AddTestFiles();
+            InitializeDirectories();
         }
 
-        private void AddTestFiles()
+        private void InitializeDirectories()
         {
             Task.Run(async () =>
             {
                 await ViewModel.ChangeLocalDirectory(@"E:\");
                 ViewModel.ChangeRemoteDirectoryToRoot();
             }).Wait();
-            
-            ViewModel.TransferTasks.Add(new TransferFileModel()
-            {
-                FilePath = @"C:\1.txt",
-                RemoteFilePath = @"/home/1.txt",
-                Size = 5,
-                Time = DateTime.Now,
-                TransferDirection = TransferDirection.Upload,
-                TransferStatus = TransferStatus.Transferring,
-                Progress = 50
-            });
-            ViewModel.TransferTasks.Add(new TransferFileModel()
-            {
-                FilePath = @"C:\2.txt",
-                RemoteFilePath = @"/home/2.txt",
-                Size = 5,
-                Time = DateTime.Now,
-                TransferDirection = TransferDirection.Download,
-                TransferStatus = TransferStatus.Done,
-                Progress = 100
-            });
         }
     }
 }

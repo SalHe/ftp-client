@@ -68,7 +68,6 @@
             </Grid.ColumnDefinitions>
 
             <!-- 本地文件 -->
-
             <Grid Grid.Column="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="32"/>
@@ -85,7 +84,8 @@
                 </Grid>
                 <DataGrid Grid.Row="1" Margin="0 0 5 5"
                           ItemsSource="{Binding LocalFiles}" AutoGenerateColumns="False"
-                          IsReadOnly="True" SelectionUnit="FullRow">
+                          IsReadOnly="True" SelectionUnit="FullRow"
+                          SelectedItem="{Binding SelectedLocalFile, Mode=OneWayToSource}">
                     <DataGrid.InputBindings>
                         <MouseBinding Gesture="LeftDoubleClick" 
                                                               Command="{Binding ChangeLocalDirectoryCommand}" 
@@ -106,6 +106,27 @@
                         <DataGridTextColumn Header="大小" Width="120" Binding="{Binding Size}"/>
                         <DataGridTextColumn Header="修改时间" Binding="{Binding Time}"/>
                     </DataGrid.Columns>
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Height="100" Command="{Binding UploadSelectedFileCommand}">
+                                <MenuItem.Header>
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBlock Margin="0 4"  Text="上传文件"/>
+                                        <StackPanel Orientation="Vertical" Margin="30 0">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Label Content="从"/>
+                                                <Label Content="{Binding SelectedLocalFile.FilePath}"/>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Label Content="到"/>
+                                                <Label Content="{Binding TargetRemoteFilePath}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </MenuItem.Header>
+                            </MenuItem>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
                 </DataGrid>
             </Grid>
 
@@ -126,7 +147,8 @@
                 </Grid>
                 <DataGrid Grid.Row="1" Margin="5 0 0 5"
                                                 ItemsSource="{Binding RemoteFiles}" AutoGenerateColumns="False"
-                                                IsReadOnly="True" SelectionUnit="FullRow">
+                                                IsReadOnly="True" SelectionUnit="FullRow"
+                                                SelectedItem="{Binding SelectedRemoteFile, Mode=OneWayToSource}">
                     <DataGrid.InputBindings>
                         <MouseBinding Gesture="LeftDoubleClick" 
                                       Command="{Binding ChangeRemoteDirectoryCommand}" 

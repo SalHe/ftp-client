@@ -19,6 +19,11 @@ namespace FTPClient.Core
         public string Grants { get; set; }
 
         /// <summary>
+        /// 文件大小。
+        /// </summary>
+        public long Size { get; set; }
+
+        /// <summary>
         /// 修改时间。
         /// </summary>
         public string Time { get; set; }

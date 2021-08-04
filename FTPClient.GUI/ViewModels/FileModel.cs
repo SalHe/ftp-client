@@ -44,6 +44,11 @@ namespace FTPClient.GUI.ViewModels
             {
                 if (Regex.IsMatch(FilePath, @"^\w:\\$"))
                     return FilePath;
+                int p = FilePath.LastIndexOf("/");
+                if (p >= 0)
+                {
+                    return FilePath.Substring(p+1);
+                }
                 return Path.GetFileName(FilePath);
             }
         }

@@ -130,7 +130,7 @@
                     <DataGrid.InputBindings>
                         <MouseBinding Gesture="LeftDoubleClick" 
                                       Command="{Binding ChangeRemoteDirectoryCommand}" 
-                                      CommandParameter="{Binding Path=SelectedItem.FilePath, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                      CommandParameter="{Binding Path=SelectedItem, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" />
                     </DataGrid.InputBindings>
                     <DataGrid.Columns>
                         <DataGridTemplateColumn Header="文件名" Width="*">

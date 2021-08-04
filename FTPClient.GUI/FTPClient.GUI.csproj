@@ -13,4 +13,8 @@
     <PackageReference Include="ReactiveUI.WPF" Version="14.1.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\FTPClient.Core\FTPClient.Core.csproj" />
+  </ItemGroup>
+
 </Project>

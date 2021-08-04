@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using DynamicData;
+using FTPClient.Core;
 using ReactiveUI;
 
 namespace FTPClient.GUI.ViewModels
@@ -76,30 +77,40 @@ namespace FTPClient.GUI.ViewModels
         public ReactiveCommand<Unit, Unit> ConnectFtpServerCommand { get; }
         public ReactiveCommand<Unit, Unit> DisconnectFromFtpServeCommand { get; }
         public ReactiveCommand<string, Unit> ChangeLocalDirectoryCommand { get; }
-        public ReactiveCommand<string, Unit> ChangeRemoteDirectoryCommand { get; }
+        public ReactiveCommand<RemoteFileModel, Unit> ChangeRemoteDirectoryCommand { get; }
 
         #endregion
 
+        private IFTPClient _ftpClient;
+
         public MainViewModel()
         {
+            _ftpClient = new FakeFTPClient();
+
             LocalFiles = new();
             RemoteFiles = new();
             TransferTasks = new();
 
-            ConnectFtpServerCommand = ReactiveCommand.CreateFromTask(async () =>
-            {
-                // TODO 实现连接到服务器
-                Connected = true;
-            });
+            ConnectFtpServerCommand = ReactiveCommand.Create(() =>
+           {
+               _ftpClient.Init(Host, Port, Username, Password);
+               _ftpClient.Connect();
+               Connected = _ftpClient.Connected;
+               if (Connected)
+               {
+                   ChangeRemoteDirectory("/");
+               }
+           });
 
-            DisconnectFromFtpServeCommand = ReactiveCommand.CreateFromTask(async () =>
-            {
-                // TODO 实现断开连接
-                Connected = false;
-            });
+            DisconnectFromFtpServeCommand = ReactiveCommand.Create(() =>
+           {
+               _ftpClient.Disconnect();
+               Connected = _ftpClient.Connected;
+               if (!Connected) RemoteFiles.Clear();
+           });
 
             ChangeLocalDirectoryCommand = ReactiveCommand.CreateFromTask(new Func<string, Task<Unit>>(ChangeLocalDirectory));
-            ChangeRemoteDirectoryCommand = ReactiveCommand.CreateFromTask(new Func<string, Task<Unit>>(ChangeRemoteDirectory));
+            ChangeRemoteDirectoryCommand = ReactiveCommand.CreateFromTask(new Func<RemoteFileModel, Task<Unit>>(ChangeRemoteDirectory));
         }
 
         public async Task<Unit> ChangeLocalDirectory(string dir)
@@ -160,31 +171,47 @@ namespace FTPClient.GUI.ViewModels
             return Unit.Default;
         }
 
-        public async Task<Unit> ChangeRemoteDirectory(string dir)
+        public async Task<Unit> ChangeRemoteDirectory(RemoteFileModel dir)
         {
-            // TODO 获取远程的文件列表
-            RemoteDirectory = dir;
+            if (!dir.Grants.StartsWith("d")) return Unit.Default;
+            var path = dir.FilePath;
+            ChangeRemoteDirectory(path);
+            return Unit.Default;
+        }
+
+        private void ChangeRemoteDirectory(string path)
+        {
+            if (!Connected)
+                UIUtils.RunOnUIThread(() => RemoteFiles.Clear());
+            _ftpClient.ChangeDirectory(path);
+            List<RemoteFileModel> remoteFiles = new();
+
+            // 添加一个特殊目录，用于返回父级目录
+            if (!Regex.IsMatch(path, @"^/+$"))
+                remoteFiles.Add(new RemoteFileModel()
+                {
+                    FilePath = path + "/..",
+                    Grants = "d------"
+                });
+
+            foreach (FTPFile ftpFile in _ftpClient.ListFiles(path))
+            {
+                remoteFiles.Add(new RemoteFileModel()
+                {
+                    FilePath = ftpFile.FilePath,
+                    Size = ftpFile.Size,
+                    Grants = ftpFile.Grants,
+                    Owner = ftpFile.Owner + "/" + ftpFile.OwnerGroup,
+                    Time = DateTime.Parse(ftpFile.Time)
+                });
+            }
+
             UIUtils.RunOnUIThread(() =>
             {
                 RemoteFiles.Clear();
-                RemoteFiles.Add(new RemoteFileModel()
-                {
-                    FilePath = @"/home/1.txt",
-                    Size = 5,
-                    Time = DateTime.Now,
-                    Grants = "-rw-------",
-                    Owner = "ftp/ftp"
-                });
-                RemoteFiles.Add(new RemoteFileModel()
-                {
-                    FilePath = @"/home/2.txt",
-                    Size = 5,
-                    Time = DateTime.Now,
-                    Grants = "-rw-------",
-                    Owner = "ftp/ftp"
-                });
+                RemoteFiles.AddRange(remoteFiles);
             });
-            return Unit.Default;
+            RemoteDirectory = _ftpClient.GetCurrentDirectory();
         }
     }
 }

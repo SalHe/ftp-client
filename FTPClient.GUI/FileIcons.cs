@@ -28,7 +28,7 @@ namespace FTPClient.GUI
 
                 using MemoryStream memory = new MemoryStream();
                 var bitmap = Icon.ExtractAssociatedIcon(tempFilePath)?.ToBitmap();
-                bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Bmp);
+                bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Png);
                 memory.Position = 0;
                 bitmapImage = new BitmapImage();
                 bitmapImage.BeginInit();

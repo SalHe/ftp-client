@@ -96,10 +96,7 @@ namespace FTPClient.GUI.ViewModels
                _ftpClient.Init(Host, Port, Username, Password);
                _ftpClient.Connect();
                Connected = _ftpClient.Connected;
-               if (Connected)
-               {
-                   ChangeRemoteDirectory("/");
-               }
+               ChangeRemoteDirectoryToRoot();
            });
 
             DisconnectFromFtpServeCommand = ReactiveCommand.Create(() =>
@@ -111,6 +108,11 @@ namespace FTPClient.GUI.ViewModels
 
             ChangeLocalDirectoryCommand = ReactiveCommand.CreateFromTask(new Func<string, Task<Unit>>(ChangeLocalDirectory));
             ChangeRemoteDirectoryCommand = ReactiveCommand.CreateFromTask(new Func<RemoteFileModel, Task<Unit>>(ChangeRemoteDirectory));
+        }
+
+        public void ChangeRemoteDirectoryToRoot()
+        {
+            ChangeRemoteDirectory("/");
         }
 
         public async Task<Unit> ChangeLocalDirectory(string dir)

@@ -45,11 +45,7 @@ namespace FTPClient.GUI
             Task.Run(async () =>
             {
                 await ViewModel.ChangeLocalDirectory(@"E:\");
-                await ViewModel.ChangeRemoteDirectory(new RemoteFileModel()
-                {
-                    FilePath = "/",
-                    Grants = "drw-------"
-                });
+                ViewModel.ChangeRemoteDirectoryToRoot();
             }).Wait();
             
             ViewModel.TransferTasks.Add(new TransferFileModel()

@@ -182,7 +182,10 @@ namespace FTPClient.GUI.ViewModels
         private void ChangeRemoteDirectory(string path)
         {
             if (!Connected)
+            {
                 UIUtils.RunOnUIThread(() => RemoteFiles.Clear());
+                return;
+            }
             _ftpClient.ChangeDirectory(path);
             List<RemoteFileModel> remoteFiles = new();
 

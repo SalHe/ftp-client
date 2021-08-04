@@ -48,6 +48,12 @@ namespace FTPClient.Core
         void ChangeDirectory(string path);
 
         /// <summary>
+        /// 创建目录。
+        /// </summary>
+        /// <param name="path">目录路径</param>
+        void CreateDirectory(string path);
+
+        /// <summary>
         /// 删除目录。
         /// </summary>
         /// <param name="path">目录路径</param>

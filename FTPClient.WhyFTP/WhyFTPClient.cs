@@ -107,26 +107,28 @@ namespace FTPClient.WhyFTP
             {
                 _logger.Info("需要密码");
                 _logger.Info("正在输入密码");
-                response = CmdSocket.Request("PASS", Regex.Replace(_credential.Password, ".", "*"));
+                response = CmdSocket.Request("PASS", _credential.Password);
                 switch (response.StatusCode)
                 {
                     case FTPStatusCode.NotLoggedIn:
+                        Connected = false;
+                        CmdSocket.Disconnect(false);
                         _logger.Error("登录失败！");
                         break;
                     case FTPStatusCode.LoggedInProceed:
                         _logger.Info("登录成功！");
+                        response = CmdSocket.Request("SYST");
+                        if (response.Body.ToUpper().Contains("UNIX"))
+                            _os = OperationSystemType.Unix;
+                        else if (response.Body.ToUpper().Contains("LINUX"))
+                            _os = OperationSystemType.Linux;
+                        else if (response.Body.ToUpper().Contains("WINDOWS"))
+                            _os = OperationSystemType.Windows;
+                        _logger.Info($"FTP服务器操作系统：{_os}");
                         break;
                 }
             }
 
-            response = CmdSocket.Request("SYST");
-            if (response.Body.ToUpper().Contains("unix"))
-                _os = OperationSystemType.Unix;
-            else if (response.Body.ToUpper().Contains("linux"))
-                _os = OperationSystemType.Linux;
-            else if (response.Body.ToUpper().Contains("windows"))
-                _os = OperationSystemType.Windows;
-            _logger.Info($"FTP服务器操作系统：{_os}");
         }
 
         /// <summary>

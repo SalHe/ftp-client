@@ -14,6 +14,7 @@ using System.Windows.Threading;
 using DynamicData;
 using FTPClient.Core;
 using FTPClient.Core.XyxFTP;
+using FTPClient.GUI.Cores;
 using FTPClient.WhyFTP;
 using Microsoft.VisualBasic;
 using NLog;
@@ -23,6 +24,8 @@ namespace FTPClient.GUI.ViewModels
 {
     public class MainViewModel : ReactiveObject
     {
+        public const string DefaultFTPCore = "Xyx FTP";
+
         #region Properties
 
         private string _host = "127.0.0.1";
@@ -32,7 +35,8 @@ namespace FTPClient.GUI.ViewModels
         private bool _connected;
         private string _localDirectory;
         private string _remoteDirectory = string.Empty;
-
+        private string _currentFtpCore = DefaultFTPCore;
+        
         public string Host
         {
             get => _host;
@@ -89,7 +93,7 @@ namespace FTPClient.GUI.ViewModels
             }
         }
 
-        private readonly Subject<bool> _hasSelectedRemoteFile;
+        private readonly Subject<bool> _hasSelectedRemoteFile = new();
         public RemoteFileModel SelectedRemoteFile
         {
             get => _selectedRemoteFile;
@@ -113,9 +117,21 @@ namespace FTPClient.GUI.ViewModels
             set => this.RaiseAndSetIfChanged(ref _remoteNewFileName, value);
         }
 
-        public ObservableCollection<FileModel> LocalFiles { get; }
-        public ObservableCollection<RemoteFileModel> RemoteFiles { get; }
-        public ObservableCollection<TransferFileModel> TransferTasks { get; }
+        public string CurrentFTPCore
+        {
+            get => _currentFtpCore;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _currentFtpCore, value);
+                FTPClient = FTPCoreManager.GetInstance(value);
+                _logger.Info($"已切换内核为：{value}");
+            }
+        }
+
+        public ObservableCollection<FileModel> LocalFiles { get; } = new();
+        public ObservableCollection<RemoteFileModel> RemoteFiles { get; } = new();
+        public ObservableCollection<TransferFileModel> TransferTasks { get; } = new();
+        public ObservableCollection<string> FTPCores { get; } = new();
 
         #endregion
 
@@ -136,7 +152,7 @@ namespace FTPClient.GUI.ViewModels
 
         #endregion
 
-        public IFTPClient FTPClient { get; }
+        public IFTPClient FTPClient { get; private set; }
         private FileModel _selectedLocalFile;
         private RemoteFileModel _selectedRemoteFile;
         private string _remoteNewFileName;
@@ -145,15 +161,9 @@ namespace FTPClient.GUI.ViewModels
 
         public MainViewModel()
         {
-            // FTPClient = new FakeFTPClient();
-            FTPClient = new XyxFTPClient();
+            UpdateFTPCores();
 
-            _hasSelectedRemoteFile = new();
             _hasSelectedRemoteFile.OnNext(false);
-
-            LocalFiles = new();
-            RemoteFiles = new();
-            TransferTasks = new();
 
             ConnectFtpServerCommand = ReactiveCommand.Create(() =>
            {
@@ -411,6 +421,22 @@ namespace FTPClient.GUI.ViewModels
             {
                 RemoteFiles.Clear();
                 RemoteFiles.AddRange(remoteFiles);
+            });
+        }
+
+        public void UpdateFTPCores()
+        {
+            UIUtils.RunOnUIThread(() =>
+            {
+                FTPCores.Clear();
+                foreach (string coreName in FTPCoreManager.ListCoreNames())
+                {
+                    FTPCores.Add(coreName);
+                }
+                if (!FTPCores.Contains(CurrentFTPCore))
+                {
+                    CurrentFTPCore = DefaultFTPCore;
+                }
             });
         }
     }

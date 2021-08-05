@@ -30,7 +30,7 @@ namespace FTPClient.GUI.NLog
                 else if (logEvent.Level == LogLevel.Info)
                     color = Color.FromRgb(0, 0, 0);
                 else if (logEvent.Level == LogLevel.Warn)
-                    color = MaterialDesignColors.Recommended.YellowSwatch.Yellow500;
+                    color = MaterialDesignColors.Recommended.YellowSwatch.Yellow800;
                 else if (logEvent.Level == LogLevel.Error)
                     color = MaterialDesignColors.Recommended.RedSwatch.Red300;
                 else if (logEvent.Level == LogLevel.Fatal)

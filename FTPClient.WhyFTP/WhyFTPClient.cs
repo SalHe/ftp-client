@@ -252,6 +252,12 @@ namespace FTPClient.WhyFTP
         // TODO 实现上传下载
         public void UploadFile(string localPath, string remotePath, IFTPClient.ReportProgress reportProgressFunction)
         {
+            _logger.Warn("本内核当前未实现上传功能！");
+            SimulateTransferring(reportProgressFunction);
+        }
+
+        private static void SimulateTransferring(IFTPClient.ReportProgress reportProgressFunction)
+        {
             var random = new Random();
             for (int i = 0; i <= 100; i++)
             {
@@ -264,12 +270,14 @@ namespace FTPClient.WhyFTP
                 reportProgressFunction(i / 100f, false, false);
                 Thread.Sleep(100);
             }
+
             reportProgressFunction(1, false, true);
         }
 
         public void DownloadFile(string remotePath, string localPath, IFTPClient.ReportProgress reportProgressFunction)
         {
-            UploadFile(localPath, remotePath, reportProgressFunction);
+            _logger.Warn("本内核当前未实现下载功能！");
+            SimulateTransferring(reportProgressFunction);
         }
     }
 }

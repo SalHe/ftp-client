@@ -1,21 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace FTPClient.Core
+namespace FTPClient.Core.XyxFTP
 {
-    public class XyxFTPClient
+    public class XyxFTPClient : IFTPClient
     {
         /// <summary>
         /// 服务器地址
         /// </summary>
         private string serverAddress;
-        
+
         /// <summary>
         /// 用户名
         /// </summary>
@@ -25,7 +22,7 @@ namespace FTPClient.Core
         /// 用户密码
         /// </summary>
         private string password;
-        
+
         /// <summary>
         /// 每执行一个方法产生的响应存至此处
         /// </summary>
@@ -63,9 +60,9 @@ namespace FTPClient.Core
         private readonly int bufSize = 1024;
 
         /// <summary>
-        /// 返回响应码
+        /// 多次传输是每此传输的缓冲区大小
         /// </summary>
-        private string code;
+        private readonly int tempBufSize = 10;
 
         /// <summary>
         /// 此次操作是否有两个响应
@@ -74,7 +71,7 @@ namespace FTPClient.Core
         /// </summary>
         private bool twoResponse = false;
 
-
+        private OperationSystemType _os;
 
         public string CmdResponse_1
         {
@@ -96,9 +93,9 @@ namespace FTPClient.Core
         }
         public string ServerAddress
         {
-            set 
+            set
             {
-                if(value != null)
+                if (value != null)
                     serverAddress = value;
             }
             get
@@ -140,8 +137,6 @@ namespace FTPClient.Core
         {
             get
             {
-                if(debugMessage == null)
-                    return 0;
                 return debugMessage;
             }
         }
@@ -149,12 +144,21 @@ namespace FTPClient.Core
         {
             get
             {
-                if (twoResponse == null)
-                    return false;
                 return twoResponse;
             }
-            
+
         }
+
+        bool IFTPClient.Connected => IsConnected();
+
+
+        private bool IsConnected()
+        {
+            if (cmdClient == null)
+                return false;
+            return cmdClient.Connected;
+        }
+
 
         /// <summary>
         /// 构造方法
@@ -209,7 +213,7 @@ namespace FTPClient.Core
                 }
                 debugMessage = 1;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 debugMessage = 0;
             }
@@ -320,15 +324,28 @@ namespace FTPClient.Core
             try
             {
                 int i;
-                cmdClient.Connect(serverAddress,21);
+                cmdClient.Connect(serverAddress, 21);
                 cmdClient.Receive(buffer);
                 SendCmd("USER " + username + "\r\n", 0);
                 receive(0);
                 SendCmd("PASS " + password + "\r\n", 0);
                 receive(3);
+                if (cmdResponse_2.Substring(0, 3) != "230")
+                {
+                    cmdClient.Close();
+                }
                 twoResponse = true;
                 i = cmdResponse_1.IndexOf("\r\n");
                 cmdResponse_1 = cmdResponse_1.Substring(0, i);
+                
+                SendCmd("SYST\r\n", 0);
+                receive(0);
+                if (cmdResponse_1.ToUpper().Contains("LINUX"))
+                    _os = OperationSystemType.Linux;
+                else if (cmdResponse_1.ToUpper().Contains("UNIX"))
+                    _os = OperationSystemType.Unix;
+                else if (cmdResponse_1.ToUpper().Contains("WINDOWS"))
+                    _os = OperationSystemType.Windows;
                 debugMessage = 0;
             }
             catch (Exception)
@@ -356,11 +373,10 @@ namespace FTPClient.Core
                 string[] parts;
                 string address;
                 int port;
-                
+
                 // 请求被动模式
                 buffer_0 = System.Text.Encoding.Default.GetBytes("PASV\r\n");
                 cmdClient.Send(buffer_0);
-                Console.WriteLine(cmdClient.Connected);
                 cmdClient.Receive(buffer_1);
 
                 // PASV端口获取
@@ -382,7 +398,7 @@ namespace FTPClient.Core
                 debugMessage = 0;
             }
         }
- 
+
         /// <summary>
         /// 获取指定目录信息
         /// </summary>
@@ -398,17 +414,17 @@ namespace FTPClient.Core
                     CmdConnect();
                 if (dataClient == null || dataClient.Connected == false)
                     DataConnect();
-                
+
                 // 请求目录
-                SendCmd("NLST\r\n", 0);
+                SendCmd("LIST\r\n", 0);
                 receive(0);
-                receive(1);
                 receive(3);
                 twoResponse = true;
+                receive(1);
 
                 // 关闭数据链接
-                dataClient.Close();
-                dataClient = null;
+                if (dataClient != null)
+                    dataClient.Close();
                 debugMessage = 1;
                 return dataResponse.Split("\r\n");
             }
@@ -486,7 +502,7 @@ namespace FTPClient.Core
                 }
                 return Convert.ToInt32(cmdResponse_1.Substring(i + 4, j - i - 4));
             }
-            catch(Exception) 
+            catch (Exception)
             {
                 debugMessage = 0;
                 return -1;
@@ -511,104 +527,77 @@ namespace FTPClient.Core
                 receive(0);
                 debugMessage = 1;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 debugMessage = 0;
             }
         }
 
         /// <summary>
-        /// 下载远程主机文件
+        /// 下载、支持断点续传
         /// </summary>
-        /// <param name="fileName"></param>
         /// <param name="localPath"></param>
-        public void Download(string fileName, string localPath)
+        /// <param name="remotePath"></param>
+        /// <param name="reportProgressFunction"></param>
+        public void NewDownload(string localPath, string remotePath, IFTPClient.ReportProgress reportProgressFunction)
         {
-            ResetResponse();
             try
             {
-                localPath.Replace("\\", @"\\");
-                byte[] buffer = new byte[Size(fileName)];
-                string path = localPath + "\\" + fileName;
-                using (File.Create(path)) ;
-                FileStream output = new FileStream(path, FileMode.Append, FileAccess.Write);
-                DataConnect();
-                SendCmd("RETR " + fileName + "\r\n", 0);
-                receive(0);
-                dataClient.Receive(buffer);
-                output.Write(buffer);
-                dataClient.Close();
-                output.Close();
-                debugMessage = 1;
-            }
-            catch (Exception)
-            {
-                debugMessage = 0;
-            }
-        }
 
-        /// <summary>
-        /// 上传本地文件
-        /// </summary>
-        /// <param name="filePath"></param>
-        public void UpLoad(string filePath)
-        {
-            ResetResponse();
-            try
-            {
-                // 文件信息处理
-                string[] parts;
-                parts = filePath.Split("\\");
-                filePath.Replace("\\", @"\\");
-                FileStream input = new FileStream(filePath, FileMode.Open);
-                byte[] buffer = new byte[input.Length];
-                input.Read(buffer, 0, buffer.Length);
-                
-                // 建立数据链接
-                DataConnect();
-                SendCmd("STOR " + parts[parts.Length - 1] + "\r\n", 0);
-                dataClient.Send(buffer);
-                dataClient.Close();
-                receive(0);
-                receive(3);
-                twoResponse = true;
-                input.Close();
-                debugMessage = 1;
-            }
-            catch(Exception)
-            {
-                debugMessage = 0;
-            }
-        }
-
-        /// <summary>
-        /// 下载，支持断点续传
-        /// </summary>
-        /// <param name="filePath"></param>
-        public void ResumeDownload(string filePath)
-        {
-            ResetResponse();
-            try
-            {
-                DataConnect();
-                FileStream file = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
-                long finishSize = file.Length;
-                string[] parts = file.Name.Split("\\");
+                int i;
+                // 远程文件信息处理
+                string[] parts = remotePath.Split("\\");
                 string fileName = parts[parts.Length - 1];
-                long restSize = Size(fileName) - finishSize;
+                long fileSize = Size(fileName);
+
+                // 找不到文件
+                if (cmdResponse_1.Substring(0, 3) == "550")
+                {
+                    debugMessage = 0;
+                    return;
+                }
+
+                localPath = localPath;
+                // 本地文件创建
+                FileStream file = new FileStream(localPath, FileMode.OpenOrCreate, FileAccess.Write);
+                file.Seek(0, SeekOrigin.End);
+                // 文件已下载大小,从后往前数
+                long finishSize = file.Length;
+
+                // 文件剩余大小（等价文件指针）
+                long restSize = fileSize - finishSize;
+
+                // 下载
                 byte[] buffer = new byte[restSize];
-                SendCmd("REST " + file.Length.ToString() + "\r\n", 0);
+                DataConnect();
+                SendCmd("REST " + finishSize.ToString() + "\r\n", 0);
                 receive(0);
-                SendCmd("RETR " + fileName + "\r\n", 0);
+                SendCmd("RETR " + remotePath + "\r\n", 0);
+                receive(0);
+                i = dataClient.Receive(buffer);
+                do
+                {
+                    file.Write(buffer, 0, i);
+                    finishSize += i;
+                    reportProgressFunction((finishSize) / fileSize, false, false);
+                    i = dataClient.Receive(buffer);
+                    file.Flush();
+                }
+                while (i > 0);
+
                 dataClient.Receive(buffer);
-                receive(3);
-                twoResponse = true;
-                file.Write(buffer, 0, buffer.Length);
                 dataClient.Close();
+                reportProgressFunction(1, false, true);
                 debugMessage = 1;
+                if (dataClient == null)
+                    return;
+                dataClient.Close();
             }
             catch (Exception)
             {
+                if (dataClient != null)
+                    dataClient.Close();
+                reportProgressFunction(0, true, false);
                 debugMessage = 0;
             }
         }
@@ -617,39 +606,61 @@ namespace FTPClient.Core
         /// 上传、支持断点续传
         /// </summary>
         /// <param name="filePath"></param>
-        public void ResumeUpload(string filePath)
+        public void newUpoad(string localPath, string remotePath, IFTPClient.ReportProgress reportProgressFunction)
         {
             ResetResponse();
             try
             {
                 // 剩余文件读取
                 string[] parts;
-                parts = filePath.Split("\\");
-                FileStream input = new FileStream(filePath, FileMode.Open);
-                int finishSIze = Size(parts[parts.Length - 1]);
-                byte[] buffer_1 = new byte[input.Length-finishSIze];
-                byte[] buffer_0 = new byte[input.Length];
-                input.Read(buffer_0, 0, buffer_0.Length);
-
-                // 复制追加部分
-                for (int i = finishSIze; i < buffer_0.Length; i++)
-                    buffer_1[i] = buffer_0[i];
-
-                //知会服务器追加文件名
-                SendCmd("APPE " + parts[parts.Length - 1], 0);
-                receive(0);
-                DataConnect();
-                SendCmd("STOR " + parts[parts.Length - 1] + "\r\n", 0);
-                dataClient.Send(buffer_1);
-                dataClient.Close();
-                receive(0);
-                receive(0);
+                parts = localPath.Split("\\");
+                FileStream input = new FileStream(localPath, FileMode.Open);
+                string originPath = GetCurrentDirectory();
+                ChangeDirectory(remotePath);
+                long finishSize = Size(parts[parts.Length - 1]);
+                long fileSize = input.Length;
+                while (finishSize < fileSize)
+                {
+                    byte[] buffer;
+                    long restSize = fileSize - finishSize;
+                    if (tempBufSize > restSize)
+                    {
+                        buffer = new byte[restSize];
+                    }
+                    else
+                    {
+                        buffer = new byte[tempBufSize];
+                    }
+                    input.Seek(finishSize, SeekOrigin.Begin);
+                    input.Read(buffer);
+                    DataConnect();
+                    //知会服务器追加文件名
+                    if (finishSize > 0)
+                    {
+                        SendCmd("APPE " + parts[parts.Length - 1] + "\r\n", 0);
+                        receive(0);
+                    }
+                    else
+                    {
+                        SendCmd("STOR " + parts[parts.Length - 1] + "\r\n", 0);
+                        receive(0);
+                    }
+                    dataClient.Send(buffer);
+                    dataClient.Close();
+                    receive(0);
+                    //receive(0);
+                    finishSize += tempBufSize;
+                    reportProgressFunction(finishSize / fileSize, false, false);
+                }
+                ChangeDirectory(originPath);
                 twoResponse = true;
                 input.Close();
                 debugMessage = 1;
+                reportProgressFunction(1, false, true);
             }
             catch (Exception)
             {
+                reportProgressFunction(0, true, false);
                 debugMessage = 0;
             }
         }
@@ -665,7 +676,8 @@ namespace FTPClient.Core
                 SendCmd("QUIT\r\n", 0);
                 receive(0);
                 cmdClient.Close();
-                dataClient.Close();
+                if (dataClient != null)
+                    dataClient.Close();
                 debugMessage = 1;
             }
             catch (Exception)
@@ -687,7 +699,7 @@ namespace FTPClient.Core
                 receive(0);
                 debugMessage = 1;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 debugMessage = 1;
             }
@@ -707,7 +719,7 @@ namespace FTPClient.Core
                 receive(0);
                 debugMessage = 1;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 debugMessage = 0;
             }
@@ -718,7 +730,7 @@ namespace FTPClient.Core
         /// </summary>
         /// <param name="oldPath"></param>
         /// <param name="newPath"></param>
-        public void Rename(string oldPath,string newPath)
+        public void Rename(string oldPath, string newPath)
         {
             ResetResponse();
             try
@@ -730,15 +742,99 @@ namespace FTPClient.Core
                 twoResponse = true;
                 debugMessage = 1;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 debugMessage = 0;
             }
         }
 
+        /// <summary>
+        /// 传路径，得名字
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public string GetObjectName(string path)
+        {
+            string[] parts = path.Split("\\");
+            return parts[parts.Length - 1];
+        }
 
+        #region
+        public void Disconnect()
+        {
+            Quit();
+        }
 
+        public void ChangeDirectory(string path)
+        {
+            Cwd(path);
+        }
 
+        /// <summary>
+        /// 在当前远程目录下创建
+        /// </summary>
+        /// <param name="path"></param>
+        public void CreateDirectory(string path)
+        {
+            Mkd(path);
+        }
 
-}
+        /// <summary>
+        /// path为输入文件
+        /// </summary>
+        /// <param name="path"></param>
+        public void DeleteDirectory(string path)
+        {
+            DeleteDir(path);
+        }
+
+        public string GetCurrentDirectory()
+        {
+            return Pwd();
+        }
+
+        public FTPFile[] ListFiles(string path)
+        {
+            string[] filelist = Dir(path);
+            FTPFile[] file = new FTPFile[filelist.Length - 1];
+            DateTimeFormatInfo dtFormat = new DateTimeFormatInfo();
+            dtFormat.ShortDatePattern = "yyy MM hh:mm";
+            for (int i = 0; i < filelist.Length - 1; i++)
+            {
+                file[i] = FTPFile.FromFTPListLine(_os, filelist[i], path);
+                // file[i] = new FTPFile();
+                // file[i].FilePath = GetCurrentDirectory() + "/" + filelist[i].Substring(49);
+                // file[i].Grants = filelist[i].Substring(0, 10);
+                // file[i].Time = Convert.ToDateTime(filelist[i].Substring(36, 12), dtFormat);
+            }
+            return file;
+        }
+
+        public void UploadFile(string localPath, string remotePath, IFTPClient.ReportProgress reportProgressFunction)
+        {
+            newUpoad(localPath, remotePath, reportProgressFunction);
+        }
+
+        public void DownloadFile(string remotePath, string localPath, IFTPClient.ReportProgress reportProgressFunction)
+        {
+            NewDownload(localPath, remotePath, reportProgressFunction);
+        }
+
+        public void Init(string host, int port, string username, string password)
+        {
+            SetAccount(username, password);
+            SetServer(host);
+        }
+
+        public void Connect()
+        {
+            CmdConnect();
+        }
+
+        public void RenameFile(string filePath, string newFilePath)
+        {
+            Rename(filePath, newFilePath);
+        }
+        #endregion
+    }
 }

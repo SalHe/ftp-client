@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FTPClient.Core.XyxFTP\FTPClient.Core.XyxFTP.csproj" />
     <ProjectReference Include="..\FTPClient.Core\FTPClient.Core.csproj" />
     <ProjectReference Include="..\FTPClient.WhyFTP\FTPClient.WhyFTP.csproj" />
   </ItemGroup>

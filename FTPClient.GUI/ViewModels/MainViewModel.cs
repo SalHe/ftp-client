@@ -13,6 +13,7 @@ using System.Windows;
 using System.Windows.Threading;
 using DynamicData;
 using FTPClient.Core;
+using FTPClient.Core.XyxFTP;
 using FTPClient.WhyFTP;
 using Microsoft.VisualBasic;
 using NLog;
@@ -145,7 +146,7 @@ namespace FTPClient.GUI.ViewModels
         public MainViewModel()
         {
             // FTPClient = new FakeFTPClient();
-            FTPClient = new WhyFTPClient();
+            FTPClient = new XyxFTPClient();
 
             _hasSelectedRemoteFile = new();
             _hasSelectedRemoteFile.OnNext(false);

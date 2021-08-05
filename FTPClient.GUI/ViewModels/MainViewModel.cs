@@ -36,7 +36,7 @@ namespace FTPClient.GUI.ViewModels
         private string _localDirectory;
         private string _remoteDirectory = string.Empty;
         private string _currentFtpCore = DefaultFTPCore;
-        
+
         public string Host
         {
             get => _host;
@@ -123,8 +123,7 @@ namespace FTPClient.GUI.ViewModels
             set
             {
                 this.RaiseAndSetIfChanged(ref _currentFtpCore, value);
-                FTPClient = FTPCoreManager.GetInstance(value);
-                _logger.Info($"已切换内核为：{value}");
+                SwitchNewFTPCore();
             }
         }
 
@@ -438,6 +437,20 @@ namespace FTPClient.GUI.ViewModels
                     CurrentFTPCore = DefaultFTPCore;
                 }
             });
+        }
+        private void SwitchNewFTPCore()
+        {
+            string value;
+            FTPClient = FTPCoreManager.GetInstance(CurrentFTPCore);
+            _logger.Info($"已切换内核为：{CurrentFTPCore}");
+            if (FTPClient is FakeFTPClient)
+            {
+                _logger.Warn("您正在使用虚拟FTP客户端内核，本内核只用于测试UI是否正常，不具备实际功能，输入密码：123456即可连接。");
+            }
+            else if (FTPClient is WhyFTPClient)
+            {
+                _logger.Warn($"您正在使用Why FTP内核，该内核目前未实现上传下载功能，可以考虑使用{DefaultFTPCore}。");
+            }
         }
     }
 }

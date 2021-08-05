@@ -103,12 +103,17 @@ namespace FTPClient.GUI
                         _logger.Info("上传文件成功！");
                         _logger.Info($"从 {transferringFile.FilePath}");
                         _logger.Info($"到 {transferringFile.RemoteFilePath}");
+
+                        ViewModel.ListRemoteFiles();
                     }
                     else if (transferringFile.TransferDirection == TransferDirection.Download)
                     {
                         _logger.Info("下载文件成功！");
                         _logger.Info($"从 {transferringFile.RemoteFilePath}");
                         _logger.Info($"到 {transferringFile.FilePath}");
+
+                        // TODO 定义一个刷新本地文件的方法
+                        ViewModel.ChangeLocalDirectory(ViewModel.LocalDirectory).Wait();
                     }
                 }
                 else

@@ -240,7 +240,7 @@ namespace FTPClient.GUI.ViewModels
 
                 FTPClient.RenameFile(SelectedRemoteFile.FilePath,
                     newFilePath);
-                ListFiles();
+                ListRemoteFiles();
             }, _hasSelectedRemoteFile);
             DeleteSelectedRemoteFileCommand = ReactiveCommand.Create(() =>
             {
@@ -254,7 +254,7 @@ namespace FTPClient.GUI.ViewModels
                     _logger.Info($"尝试删除文件：{SelectedRemoteFile.FilePath}");
                     FTPClient.DeleteFile(SelectedRemoteFile.FilePath);
                 }
-                ListFiles();
+                ListRemoteFiles();
             }, _hasSelectedRemoteFile);
 
             CreateRemoteDirectoryCommand = ReactiveCommand.Create(() =>
@@ -270,7 +270,7 @@ namespace FTPClient.GUI.ViewModels
                 _logger.Info($"尝试新建文件夹：{dirPath}");
 
                 FTPClient.CreateDirectory(dirPath);
-                ListFiles();
+                ListRemoteFiles();
             });
         }
 
@@ -389,10 +389,10 @@ namespace FTPClient.GUI.ViewModels
 
             _logger.Info($"远程工作路径：{RemoteDirectory}");
 
-            ListFiles();
+            ListRemoteFiles();
         }
 
-        private void ListFiles()
+        public void ListRemoteFiles()
         {
             string path = RemoteDirectory;
             List<RemoteFileModel> remoteFiles = new();

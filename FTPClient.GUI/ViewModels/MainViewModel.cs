@@ -387,7 +387,7 @@ namespace FTPClient.GUI.ViewModels
             FTPClient.ChangeDirectory(path);
             RemoteDirectory = FTPClient.GetCurrentDirectory();
 
-            _logger.Info($"远程工作路径：{LocalDirectory}");
+            _logger.Info($"远程工作路径：{RemoteDirectory}");
 
             ListFiles();
         }

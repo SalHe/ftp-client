@@ -161,6 +161,7 @@ namespace FTPClient.GUI.ViewModels
         public MainViewModel()
         {
             UpdateFTPCores();
+            SwitchNewFTPCore();
 
             _hasSelectedRemoteFile.OnNext(false);
 
